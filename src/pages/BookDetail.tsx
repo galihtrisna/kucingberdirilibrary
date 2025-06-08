@@ -1,7 +1,7 @@
-import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useParams, Link } from "react-router-dom"; 
+import { Button } from "@/components/ui/button"; 
+import { Card, CardContent } from "@/components/ui/card"; 
+import { Badge } from "@/components/ui/badge"; 
 import {
   Star,
   Download,
@@ -11,28 +11,43 @@ import {
   ArrowLeft,
   Heart,
   Share2,
-} from "lucide-react";
+} from "lucide-react"; 
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios"; 
+interface Book {
+  id: number;
+  title: string;
+  author: string;
+  publisher: string;
+  year: number;
+  isbn: string;
+  thumbnail: string; 
+  stocks: number;
+  digitalAvail: boolean;
+  jenisBuku: string;
+}
+
+const API_BASE_URL = process.env.VITE_API_BASE_URL;
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
 
 const BookDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>(); 
 
-  // Mock book data - in a real app, this would be fetched based on the ID
-  const book = {
-    id: parseInt(id || "1"),
-    title: "Struktur Data dan Algoritma",
-    author: "Ir. Bambang Sutrisno, M.T.",
-    cover:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=600&fit=crop",
-    category: "Pemrograman",
-    year: 2021,
-    rating: 4.6,
-    downloads: 1342,
-    fileSize: "10.4 MB",
-    pages: 412,
-    language: "Indonesia",
-    isbn: "978-6021234567",
-    uploadDate: "2023-09-10",
-    publisher: "Penerbit Informatika Bandung",
+  const { data: book, isLoading, error } = useQuery<Book>({
+    queryKey: ['book', id], 
+    queryFn: async () => {
+      if (!id) throw new Error("Book ID is missing"); 
+      const response = await api.get(`/book/${id}`);
+      return response.data.data;
+    },
+    enabled: !!id, 
+  });
+
+  
+  const mockAdditionalBookData = {
     description: `Buku ini membahas dasar-dasar struktur data dan algoritma yang menjadi fondasi utama dalam pengembangan perangkat lunak.
 
 Materi mencakup array, linked list, stack, queue, tree, graph, serta berbagai algoritma pengurutan dan pencarian. Penjelasan diberikan dengan pendekatan teoritis yang kuat dan didukung studi kasus nyata dalam bahasa C dan Java.
@@ -40,10 +55,10 @@ Materi mencakup array, linked list, stack, queue, tree, graph, serta berbagai al
 Ditujukan untuk mahasiswa Informatika tingkat awal hingga menengah yang ingin memahami cara kerja struktur data secara efisien dan aplikatif.
 
 Topik utama:
-• Array, List, dan Pointer  
-• Stack dan Queue  
-• Binary Tree dan Graph  
-• Sorting dan Searching  
+• Array, List, dan Pointer
+• Stack dan Queue
+• Binary Tree dan Graph
+• Sorting dan Searching
 • Analisis Kompleksitas Algoritma`,
     tableOfContents: [
       "Bab 1: Konsep Dasar Struktur Data",
@@ -81,7 +96,42 @@ Topik utama:
         date: "2023-11-12",
       },
     ],
+    fileSize: "10.4 MB", 
+    pages: 412, 
+    language: "Indonesia", 
+
+    uploadDate: "2023-09-10",
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-gray-600 text-lg">Loading book details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-red-500 text-lg">Error: Failed to fetch book details. {error.message}</p>
+        <p className="text-gray-500 text-sm mt-2">Please try again later or check the book ID.</p>
+      </div>
+    );
+  }
+
+  if (!book) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-gray-600 text-lg">Book not found.</p>
+        <Link to="/catalog" className="text-blue-500 hover:underline mt-4 block">
+          Back to Catalog
+        </Link>
+      </div>
+    );
+  }
+
+  const bookData = { ...book, ...mockAdditionalBookData };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -101,9 +151,14 @@ Topik utama:
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardContent className="p-6">
+              {/* <img
+                src={bookData.thumbnail || "https://via.placeholder.com/400x600?text=No+Cover"} // Menggunakan thumbnail dari API
+                alt={bookData.title}
+                className="w-full rounded-lg shadow-lg mb-6"
+              /> */}
               <img
-                src={book.cover}
-                alt={book.title}
+                src={"https://picsum.photos/200/300"} 
+                alt={bookData.title}
                 className="w-full rounded-lg shadow-lg mb-6"
               />
 
@@ -111,14 +166,13 @@ Topik utama:
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{book.rating}</span>
+                    <span className="font-semibold">{bookData.reviews.length > 0 ? bookData.reviews[0].rating : 'N/A'}</span> {/* Menggunakan mock data */}
                     <span className="text-gray-600">
-                      ({book.reviews.length} reviews)
+                      ({bookData.reviews.length} reviews) 
                     </span>
                   </div>
                   <div className="flex items-center space-x-1 text-gray-600">
                     <Download className="h-4 w-4" />
-                    <span>{book.downloads}</span>
                   </div>
                 </div>
 
@@ -141,19 +195,19 @@ Topik utama:
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">File Size:</span>
-                    <span className="font-medium">{book.fileSize}</span>
+                    <span className="font-medium">{bookData.fileSize}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Pages:</span>
-                    <span className="font-medium">{book.pages}</span>
+                    <span className="font-medium">{bookData.pages}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Language:</span>
-                    <span className="font-medium">{book.language}</span>
+                    <span className="font-medium">{bookData.language}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Format:</span>
-                    <span className="font-medium">PDF</span>
+                    <span className="font-medium">PDF</span> 
                   </div>
                 </div>
               </div>
@@ -161,26 +215,25 @@ Topik utama:
           </Card>
         </div>
 
-        {/* Book Details */}
         <div className="lg:col-span-2 space-y-8">
           {/* Header */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Badge variant="secondary">{book.category}</Badge>
+              <Badge variant="secondary">{bookData.jenisBuku}</Badge> 
               <div className="flex items-center gap-1 text-gray-600">
                 <Calendar className="h-4 w-4" />
-                <span>{book.year}</span>
+                <span>{bookData.year}</span>
               </div>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {book.title}
+              {bookData.title}
             </h1>
             <div className="flex items-center gap-2 text-lg text-gray-600 mb-4">
               <User className="h-5 w-5" />
-              <span>by {book.author}</span>
+              <span>by {bookData.author}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {book.tags.map((tag) => (
+              {bookData.tags.map((tag) => (
                 <Badge key={tag} variant="outline">
                   {tag}
                 </Badge>
@@ -188,12 +241,12 @@ Topik utama:
             </div>
           </div>
 
-          {/* Description */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Description</h2>
               <div className="prose prose-gray max-w-none">
-                {book.description.split("\n").map((paragraph, index) => (
+
+                {bookData.description.split("\n").map((paragraph, index) => (
                   <p key={index} className="mb-4 text-gray-700 leading-relaxed">
                     {paragraph}
                   </p>
@@ -202,15 +255,16 @@ Topik utama:
             </CardContent>
           </Card>
 
-          {/* Table of Contents */}
+
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Table of Contents
               </h2>
+
               <ul className="space-y-2">
-                {book.tableOfContents.map((chapter, index) => (
+                {bookData.tableOfContents.map((chapter, index) => (
                   <li
                     key={index}
                     className="text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
@@ -222,7 +276,6 @@ Topik utama:
             </CardContent>
           </Card>
 
-          {/* Book Information */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Book Information</h2>
@@ -230,36 +283,36 @@ Topik utama:
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-600 font-medium">ISBN:</span>
-                    <span className="ml-2">{book.isbn}</span>
+                    <span className="ml-2">{bookData.isbn}</span>
                   </div>
                   <div>
                     <span className="text-gray-600 font-medium">
                       Publisher:
                     </span>
-                    <span className="ml-2">{book.publisher}</span>
+                    <span className="ml-2">{bookData.publisher}</span> 
                   </div>
                   <div>
                     <span className="text-gray-600 font-medium">
                       Upload Date:
                     </span>
-                    <span className="ml-2">{book.uploadDate}</span>
+                    <span className="ml-2">{bookData.uploadDate}</span> 
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-600 font-medium">Category:</span>
-                    <span className="ml-2">{book.category}</span>
+                    <span className="ml-2">{bookData.jenisBuku}</span> 
                   </div>
                   <div>
                     <span className="text-gray-600 font-medium">Language:</span>
-                    <span className="ml-2">{book.language}</span>
+                    <span className="ml-2">{bookData.language}</span> 
                   </div>
                   <div>
                     <span className="text-gray-600 font-medium">
                       Total Downloads:
                     </span>
                     <span className="ml-2">
-                      {book.downloads.toLocaleString()}
+                     
                     </span>
                   </div>
                 </div>
@@ -267,12 +320,12 @@ Topik utama:
             </CardContent>
           </Card>
 
-          {/* Reviews */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Reviews</h2>
               <div className="space-y-4">
-                {book.reviews.map((review) => (
+    
+                {bookData.reviews.map((review) => (
                   <div
                     key={review.id}
                     className="border-b border-gray-100 last:border-0 pb-4 last:pb-0"

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute"; 
 
 const queryClient = new QueryClient();
 
@@ -36,16 +36,23 @@ const App = () => (
             <Route path="/book/:id" element={<BookDetail />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/dashboard" element={<UserDashboard />} />
-            <Route path="/upload" element={<UploadBook />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/books" element={<AdminBooks />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/borrowing" element={<AdminBorrowing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/legal" element={<Legal />} />
+      
             <Route path="*" element={<NotFound />} />
+
+            <Route element={<ProtectedRoute allowedRoles={["ROLE_MEMBER", "ROLE_LIBRARIAN"]} />}>
+                <Route path="/dashboard" element={<UserDashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/upload" element={<UploadBook />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={["ROLE_LIBRARIAN"]} />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/books" element={<AdminBooks />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                <Route path="/admin/borrowing" element={<AdminBorrowing />} />
+            </Route>
           </Routes>
         </Layout>
       </BrowserRouter>

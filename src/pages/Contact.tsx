@@ -22,13 +22,11 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulate form submission
     toast({
       title: "Message Sent!",
       description: "Thank you for contacting us. We'll get back to you within 24 hours.",
     });
     
-    // Reset form
     setFormData({
       name: "",
       email: "",

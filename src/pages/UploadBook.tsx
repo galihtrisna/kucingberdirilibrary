@@ -1,59 +1,145 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Upload, FileText, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+
+const API_BASE_URL = process.env.VITE_API_BASE_URL;
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("jwtToken"); 
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`; 
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const UploadBook = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    description: "",
-    category: "",
+    // description: "",
+    jenisBuku: "",
     isbn: "",
-    publishYear: "",
-    language: ""
+    year: "", 
+    // language: ""
+    publisher: "", 
+    stocks: 1, 
+    thumbnail: "", 
+    digitalAvail: true, 
   });
   const [file, setFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     
-    if (!file) {
+    if (
+      !formData.title ||
+      !formData.author ||
+      !formData.jenisBuku ||
+      !formData.isbn ||
+      !formData.year ||
+      !formData.publisher ||
+      !formData.thumbnail
+    ) {
       toast({
-        title: "File Required",
-        description: "Please select a PDF file to upload.",
-        variant: "destructive"
+        title: "Validation Error",
+        description:
+          "Please fill in all required book information (Title, Author, Category, ISBN, Year, Publisher, Thumbnail).",
+        variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Book Uploaded Successfully!",
-      description: "Your book has been submitted for review and will be available after approval.",
-    });
-    
-    // Reset form
-    setFormData({
-      title: "",
-      author: "",
-      description: "",
-      category: "",
-      isbn: "",
-      publishYear: "",
-      language: ""
-    });
-    setFile(null);
+    // if (!file) { 
+    //   toast({
+    //     title: "File Required",
+    //     description: "Please select a PDF file to upload.",
+    //     variant: "destructive"
+    //   });
+    //   return;
+    // }
+
+    try {
+     
+      const payload = {
+        title: formData.title,
+        author: formData.author,
+        publisher: formData.publisher,
+        year: parseInt(formData.year),
+        isbn: formData.isbn,
+        thumbnail: formData.thumbnail,
+        stocks: formData.stocks,
+        digitalAvail: formData.digitalAvail,
+        jenisBuku: formData.jenisBuku,
+      };
+
+      const response = await api.post("/book/add", payload);
+
+      toast({
+        title: "Book Uploaded Successfully!",
+        description:
+          "Your book has been submitted for review and will be available after approval.",
+      });
+
+      
+      setFormData({
+        title: "",
+        author: "",
+        // description: "",
+        jenisBuku: "",
+        isbn: "",
+        year: "",
+        // language: "",
+        publisher: "",
+        stocks: 1,
+        thumbnail: "",
+        digitalAvail: true,
+      });
+      setFile(null); 
+    } catch (error: any) {
+      let errorMessage =
+        "An unexpected error occurred during upload. Please try again.";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.data ||
+          error.response.data.message ||
+          error.message;
+        if (typeof errorMessage === "object" && errorMessage !== null) {
+          errorMessage = JSON.stringify(errorMessage);
+        }
+      }
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +153,8 @@ const UploadBook = () => {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">Upload a Book</h1>
         <p className="text-xl text-gray-600">
-          Contribute to our digital library by sharing knowledge with the community
+          Contribute to our digital library by sharing knowledge with the
+          community
         </p>
       </div>
 
@@ -88,7 +175,9 @@ const UploadBook = () => {
                     <Input
                       id="title"
                       value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("title", e.target.value)
+                      }
                       placeholder="Enter book title"
                       required
                     />
@@ -98,14 +187,16 @@ const UploadBook = () => {
                     <Input
                       id="author"
                       value={formData.author}
-                      onChange={(e) => handleInputChange("author", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("author", e.target.value)
+                      }
                       placeholder="Enter author name"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
+                {/* <div>
                   <Label htmlFor="description">Description *</Label>
                   <Textarea
                     id="description"
@@ -115,12 +206,17 @@ const UploadBook = () => {
                     rows={4}
                     required
                   />
-                </div>
+                </div> */}
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="category">Category *</Label>
-                    <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                    <Label htmlFor="jenisBuku">Category *</Label>
+                    <Select
+                      value={formData.jenisBuku}
+                      onValueChange={(value) =>
+                        handleInputChange("jenisBuku", value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -131,22 +227,27 @@ const UploadBook = () => {
                         <SelectItem value="history">History</SelectItem>
                         <SelectItem value="education">Education</SelectItem>
                         <SelectItem value="business">Business</SelectItem>
-                        <SelectItem value="arts">Arts</SelectItem>
+                        <SelectItem value="programming">Programming</SelectItem>
+                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="psychology">Psychology</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="publishYear">Publish Year</Label>
+                    <Label htmlFor="year">Publish Year *</Label>
                     <Input
-                      id="publishYear"
-                      value={formData.publishYear}
-                      onChange={(e) => handleInputChange("publishYear", e.target.value)}
+                      id="year"
+                      value={formData.year}
+                      onChange={(e) =>
+                        handleInputChange("year", e.target.value)
+                      }
                       placeholder="2024"
                       type="number"
+                      required
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <Label htmlFor="language">Language</Label>
                     <Select value={formData.language} onValueChange={(value) => handleInputChange("language", value)}>
                       <SelectTrigger>
@@ -158,20 +259,55 @@ const UploadBook = () => {
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div> */}
+                  <div>
+                    <Label htmlFor="publisher">Publisher *</Label>
+                    <Input
+                      id="publisher"
+                      value={formData.publisher}
+                      onChange={(e) =>
+                        handleInputChange("publisher", e.target.value)
+                      }
+                      placeholder="Penerbit X"
+                      required
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="isbn">ISBN (Optional)</Label>
+                  <Label htmlFor="isbn">ISBN *</Label>
                   <Input
                     id="isbn"
                     value={formData.isbn}
                     onChange={(e) => handleInputChange("isbn", e.target.value)}
                     placeholder="978-0-123456-78-9"
+                    required
                   />
                 </div>
 
                 <div>
+                  <Label htmlFor="thumbnail">Thumbnail URL *</Label>
+                  <Input
+                    id="thumbnail"
+                    type="url"
+                    value={formData.thumbnail}
+                    onChange={(e) =>
+                      handleInputChange("thumbnail", e.target.value)
+                    }
+                    placeholder="https://images.unsplash.com/photo-..."
+                    required
+                  />
+                  {formData.thumbnail && (
+                    <img
+                      src={formData.thumbnail}
+                      alt="Thumbnail Preview"
+                      className="mt-2 w-24 h-32 object-cover rounded"
+                    />
+                  )}
+                </div>
+
+               
+                {/* <div>
                   <Label htmlFor="file">Book File (PDF) *</Label>
                   <div className="mt-2">
                     <Input
@@ -188,7 +324,7 @@ const UploadBook = () => {
                       </p>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 <Button type="submit" className="w-full" size="lg">
                   <Upload className="h-4 w-4 mr-2" />
@@ -209,15 +345,19 @@ const UploadBook = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">File Requirements</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  File Requirements
+                </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• PDF format only</li>
-                  <li>• Maximum file size: 50MB</li>
+                  <li>• Thumbnail URL (JPG/PNG)</li>
+                  <li>• (Abaikan untuk upload file PDF saat ini)</li>
                   <li>• Clear, readable content</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Content Policy</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Content Policy
+                </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• No copyrighted material</li>
                   <li>• Educational content preferred</li>
@@ -229,19 +369,33 @@ const UploadBook = () => {
 
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-semibold text-gray-800 mb-3">Review Process</h3>
+              <h3 className="font-semibold text-gray-800 mb-3">
+                Review Process
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">1</div>
-                  <span className="text-sm text-gray-600">Submit your book</span>
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">
+                    1
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    Submit your book
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">2</div>
-                  <span className="text-sm text-gray-600">Admin review (1-3 days)</span>
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">
+                    2
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    Admin review (1-3 days)
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">3</div>
-                  <span className="text-sm text-gray-600">Published in catalog</span>
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">
+                    3
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    Published in catalog
+                  </span>
                 </div>
               </div>
             </CardContent>

@@ -31,21 +31,41 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post("/auth/accesstoken", {
-        username: loginData.username,
-        password: loginData.password,
-      });
+      const response = await api.post(
+        "/auth/accesstoken",
+        {
+          username: loginData.username,
+          password: loginData.password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       const jwtToken = response.data.data;
       localStorage.setItem("jwtToken", jwtToken);
+      console.log(
+        "AUTH: Token disimpan di localStorage:",
+        localStorage.getItem("jwtToken")
+      );
+      console.log("AUTH: Panjang token:", jwtToken.length);
+
+      window.dispatchEvent(new Event("storage"));
+      console.log("AUTH: Event 'storage' dipicu.");
 
       toast({
-        title: "Login Successful!",
-        description: "Welcome back to KBOeL",
+        title: "Login Berhasil!",
+        description: "Selamat datang kembali di KBOeL",
       });
-      navigate("/dashboard");
+
+      console.log("AUTH: Memberikan jeda sebelum navigasi...");
+      setTimeout(() => {
+        navigate("/dashboard");
+        console.log("AUTH: Navigasi ke /dashboard.");
+      }, 100); // Memberi jeda 100ms
     } catch (error: any) {
-      let errorMessage = "An unexpected error occurred. Please try again.";
+      let errorMessage =
+        "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage =
           error.response.data.data ||
@@ -55,8 +75,9 @@ const Auth = () => {
           errorMessage = JSON.stringify(errorMessage);
         }
       }
+      console.error("AUTH: Login gagal:", errorMessage, error);
       toast({
-        title: "Login Failed",
+        title: "Login Gagal",
         description: errorMessage,
         variant: "destructive",
       });
@@ -67,14 +88,15 @@ const Auth = () => {
     e.preventDefault();
     if (registerData.password !== registerData.confirmPassword) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
+        title: "Kesalahan",
+        description: "Kata sandi tidak cocok",
         variant: "destructive",
       });
       return;
     }
 
     try {
+      console.log("AUTH: Mengirim permintaan registrasi...");
       await api.post("/auth/register", {
         username: registerData.username,
         password: registerData.password,
@@ -83,8 +105,8 @@ const Auth = () => {
       });
 
       toast({
-        title: "Registration Successful!",
-        description: "Your account has been created. You can now log in.",
+        title: "Registrasi Berhasil!",
+        description: "Akun Anda telah dibuat. Anda sekarang dapat masuk.",
       });
 
       setRegisterData({
@@ -93,8 +115,9 @@ const Auth = () => {
         password: "",
         confirmPassword: "",
       });
+      console.log("AUTH: Registrasi berhasil, mereset form.");
     } catch (error: any) {
-      let errorMessage = "Registration failed. Please try again.";
+      let errorMessage = "Registrasi gagal. Silakan coba lagi.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage =
           error.response.data.data ||
@@ -104,8 +127,9 @@ const Auth = () => {
           errorMessage = JSON.stringify(errorMessage);
         }
       }
+      console.error("AUTH: Registrasi gagal:", errorMessage, error);
       toast({
-        title: "Registration Failed",
+        title: "Registrasi Gagal",
         description: errorMessage,
         variant: "destructive",
       });
@@ -131,30 +155,32 @@ const Auth = () => {
             <BookOpen className="h-8 w-8" />
             <span>KBOeL</span>
           </Link>
-          <p className="text-gray-600 mt-2">Digital Open Library Platform</p>
+          <p className="text-gray-600 mt-2">
+            Platform Perpustakaan Digital Terbuka
+          </p>
         </div>
 
         <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome</CardTitle>
+            <CardTitle className="text-2xl">Selamat Datang</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="space-y-6">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+                <TabsTrigger value="login">Masuk</TabsTrigger>
+                <TabsTrigger value="register">Daftar</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <Label htmlFor="login-username">Username</Label>
+                    <Label htmlFor="login-username">Nama Pengguna</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="login-username"
                         type="text"
-                        placeholder="Enter your username"
+                        placeholder="Masukkan nama pengguna Anda"
                         value={loginData.username}
                         onChange={(e) =>
                           handleLoginInputChange("username", e.target.value)
@@ -166,13 +192,13 @@ const Auth = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">Kata Sandi</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="login-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder="Masukkan kata sandi Anda"
                         value={loginData.password}
                         onChange={(e) =>
                           handleLoginInputChange("password", e.target.value)
@@ -204,16 +230,16 @@ const Auth = () => {
                         className="rounded"
                       />
                       <Label htmlFor="remember" className="text-sm">
-                        Remember me
+                        Ingat saya
                       </Label>
                     </div>
                     <Button variant="link" className="text-sm p-0">
-                      Forgot password?
+                      Lupa kata sandi?
                     </Button>
                   </div>
 
                   <Button type="submit" className="w-full">
-                    Login
+                    Masuk
                   </Button>
                 </form>
               </TabsContent>
@@ -221,13 +247,13 @@ const Auth = () => {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div>
-                    <Label htmlFor="register-fullName">Full Name</Label>
+                    <Label htmlFor="register-fullName">Nama Lengkap</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="register-fullName"
                         type="text"
-                        placeholder="Your full name"
+                        placeholder="Nama lengkap Anda"
                         value={registerData.fullName}
                         onChange={(e) =>
                           handleRegisterInputChange("fullName", e.target.value)
@@ -239,13 +265,13 @@ const Auth = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="register-username">Username</Label>
+                    <Label htmlFor="register-username">Nama Pengguna</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="register-username"
                         type="text"
-                        placeholder="Choose a username"
+                        placeholder="Pilih nama pengguna"
                         value={registerData.username}
                         onChange={(e) =>
                           handleRegisterInputChange("username", e.target.value)
@@ -256,15 +282,14 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  {/* Password & Confirm Password Input */}
                   <div>
-                    <Label htmlFor="register-password">Password</Label>
+                    <Label htmlFor="register-password">Kata Sandi</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="register-password"
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Create a password"
+                        placeholder="Buat kata sandi"
                         value={registerData.password}
                         onChange={(e) =>
                           handleRegisterInputChange("password", e.target.value)
@@ -292,14 +317,14 @@ const Auth = () => {
 
                   <div>
                     <Label htmlFor="register-confirm-password">
-                      Confirm Password
+                      Konfirmasi Kata Sandi
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="register-confirm-password"
                         type="password"
-                        placeholder="Confirm your password"
+                        placeholder="Konfirmasi kata sandi Anda"
                         value={registerData.confirmPassword}
                         onChange={(e) =>
                           handleRegisterInputChange(
@@ -314,7 +339,7 @@ const Auth = () => {
                   </div>
 
                   <Button type="submit" className="w-full">
-                    Register
+                    Daftar
                   </Button>
                 </form>
               </TabsContent>

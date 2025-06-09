@@ -1,19 +1,24 @@
-import { useParams, Link } from "react-router-dom"; 
-import { Button } from "@/components/ui/button"; 
-import { Card, CardContent } from "@/components/ui/card"; 
-import { Badge } from "@/components/ui/badge"; 
+import { useParams, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Star,
-  Download,
   Calendar,
-  FileText,
   User,
   ArrowLeft,
   Heart,
   Share2,
-} from "lucide-react"; 
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios"; 
+  BookText,
+} from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+
 interface Book {
   id: number;
   title: string;
@@ -21,144 +26,237 @@ interface Book {
   publisher: string;
   year: number;
   isbn: string;
-  thumbnail: string; 
+  thumbnail: string;
   stocks: number;
   digitalAvail: boolean;
   jenisBuku: string;
 }
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL;
+interface Review {
+  id: number;
+  content: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    username: string;
+    fullName: string;
+  };
+}
 
+const API_BASE_URL = process.env.VITE_API_BASE_URL;
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-const BookDetail = () => {
-  const { id } = useParams<{ id: string }>(); 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-  const { data: book, isLoading, error } = useQuery<Book>({
-    queryKey: ['book', id], 
+const BookDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [newReviewContent, setNewReviewContent] = useState("");
+  const [newReviewRating, setNewReviewRating] = useState(0);
+
+  const {
+    data: book,
+    isLoading,
+    error,
+  } = useQuery<Book>({
+    queryKey: ["book", id],
     queryFn: async () => {
-      if (!id) throw new Error("Book ID is missing"); 
+      if (!id) throw new Error("ID Buku hilang");
       const response = await api.get(`/book/${id}`);
       return response.data.data;
     },
-    enabled: !!id, 
+    enabled: !!id,
   });
 
-  
-  const mockAdditionalBookData = {
-    description: `Buku ini membahas dasar-dasar struktur data dan algoritma yang menjadi fondasi utama dalam pengembangan perangkat lunak.
+  const {
+    data: reviews,
+    isLoading: isLoadingReviews,
+    error: errorReviews,
+  } = useQuery<Review[]>({
+    queryKey: ["bookReviews", id],
+    queryFn: async () => {
+      if (!id) throw new Error("ID Buku hilang untuk review");
+      const response = await api.get(`/review/${id}`);
+      return response.data.data;
+    },
+    enabled: !!id,
+  });
 
-Materi mencakup array, linked list, stack, queue, tree, graph, serta berbagai algoritma pengurutan dan pencarian. Penjelasan diberikan dengan pendekatan teoritis yang kuat dan didukung studi kasus nyata dalam bahasa C dan Java.
+  const borrowBookMutation = useMutation({
+    mutationFn: async (bookId: number) => {
+      const response = await api.post(`/borrow/${bookId}`);
+      return response.data;
+    },
+    onSuccess: (message) => {
+      toast({
+        title: "Peminjaman Berhasil!",
+        description: message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["borrowHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+      queryClient.invalidateQueries({ queryKey: ["book", id] });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Gagal meminjam buku. Silakan coba lagi.";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.data ||
+          error.response.data.message ||
+          error.message;
+        if (typeof errorMessage === "object" && errorMessage !== null) {
+          errorMessage = JSON.stringify(errorMessage);
+        }
+      }
+      toast({
+        title: "Peminjaman Gagal",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
-Ditujukan untuk mahasiswa Informatika tingkat awal hingga menengah yang ingin memahami cara kerja struktur data secara efisien dan aplikatif.
+  const addReviewMutation = useMutation({
+    mutationFn: async ({
+      bookId,
+      content,
+      rating,
+    }: {
+      bookId: number;
+      content: string;
+      rating: number;
+    }) => {
+      const response = await api.post(`/review/${bookId}`, { content, rating });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ulasan Ditambahkan!",
+        description: "Ulasan Anda telah berhasil ditambahkan.",
+      });
+      setNewReviewContent("");
+      setNewReviewRating(0);
+      queryClient.invalidateQueries({ queryKey: ["bookReviews", id] });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Gagal menambahkan ulasan. Silakan coba lagi.";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.data ||
+          error.response.data.message ||
+          error.message;
+        if (typeof errorMessage === "object" && errorMessage !== null) {
+          errorMessage = JSON.stringify(errorMessage);
+        }
+      }
+      toast({
+        title: "Penambahan Ulasan Gagal",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
-Topik utama:
-• Array, List, dan Pointer
-• Stack dan Queue
-• Binary Tree dan Graph
-• Sorting dan Searching
-• Analisis Kompleksitas Algoritma`,
-    tableOfContents: [
-      "Bab 1: Konsep Dasar Struktur Data",
-      "Bab 2: Array dan Pointer",
-      "Bab 3: Linked List",
-      "Bab 4: Stack dan Queue",
-      "Bab 5: Binary Tree",
-      "Bab 6: Graph dan Traversal",
-      "Bab 7: Sorting Algorithms",
-      "Bab 8: Searching Techniques",
-      "Bab 9: Kompleksitas Waktu dan Ruang",
-    ],
-    tags: [
-      "Struktur Data",
-      "Algoritma",
-      "Pemrograman",
-      "Informatika",
-      "C",
-      "Java",
-    ],
-    reviews: [
-      {
-        id: 1,
-        user: "Rizky Maulana",
-        rating: 5,
-        comment: "Penjelasan sangat mudah dipahami dan cocok untuk pemula.",
-        date: "2023-10-01",
-      },
-      {
-        id: 2,
-        user: "Dewi Pratiwi",
-        rating: 4,
-        comment:
-          "Cocok untuk referensi kuliah dan tugas besar. Banyak contoh kodenya.",
-        date: "2023-11-12",
-      },
-    ],
-    fileSize: "10.4 MB", 
-    pages: 412, 
-    language: "Indonesia", 
+  const handleBorrow = () => {
+    if (book?.id) {
+      borrowBookMutation.mutate(book.id);
+    } else {
+      toast({
+        title: "Kesalahan",
+        description: "Buku tidak ditemukan untuk dipinjam.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    uploadDate: "2023-09-10",
+  const handleAddReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (book?.id && newReviewContent && newReviewRating > 0) {
+      addReviewMutation.mutate({
+        bookId: book.id,
+        content: newReviewContent,
+        rating: newReviewRating,
+      });
+    } else {
+      toast({
+        title: "Kesalahan",
+        description: "Silakan isi konten dan rating ulasan.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-gray-600 text-lg">Loading book details...</p>
-      </div>
-    );
+    return <div className="text-center py-12">Memuat detail buku...</div>;
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-red-500 text-lg">Error: Failed to fetch book details. {error.message}</p>
-        <p className="text-gray-500 text-sm mt-2">Please try again later or check the book ID.</p>
+      <div className="text-center py-12 text-red-500">
+        Kesalahan: Gagal mengambil detail buku. {error.message}
       </div>
     );
   }
 
   if (!book) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-gray-600 text-lg">Book not found.</p>
-        <Link to="/catalog" className="text-blue-500 hover:underline mt-4 block">
-          Back to Catalog
+      <div className="text-center py-12">
+        <p className="text-gray-600">Buku tidak ditemukan.</p>
+        <Link
+          to="/catalog"
+          className="text-blue-500 hover:underline mt-4 block"
+        >
+          Kembali ke Katalog
         </Link>
       </div>
     );
   }
 
-  const bookData = { ...book, ...mockAdditionalBookData };
+  const averageRating =
+    reviews && reviews.length > 0
+      ? (
+          reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        ).toFixed(1)
+      : "N/A";
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
         <Link
           to="/catalog"
           className="hover:text-blue-600 flex items-center gap-1"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Catalog
+          Kembali ke Katalog
         </Link>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Book Cover and Actions */}
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardContent className="p-6">
-              {/* <img
-                src={bookData.thumbnail || "https://via.placeholder.com/400x600?text=No+Cover"} // Menggunakan thumbnail dari API
-                alt={bookData.title}
-                className="w-full rounded-lg shadow-lg mb-6"
-              /> */}
               <img
-                src={"https://picsum.photos/200/300"} 
-                alt={bookData.title}
+                src={
+                  book.thumbnail ||
+                  "https://via.placeholder.com/400x600?text=Tidak+Ada+Sampul"
+                }
+                alt={book.title}
                 className="w-full rounded-lg shadow-lg mb-6"
               />
 
@@ -166,48 +264,41 @@ Topik utama:
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{bookData.reviews.length > 0 ? bookData.reviews[0].rating : 'N/A'}</span> {/* Menggunakan mock data */}
+                    <span className="font-semibold">{averageRating}</span>
                     <span className="text-gray-600">
-                      ({bookData.reviews.length} reviews) 
+                      ({reviews ? reviews.length : 0} ulasan)
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-1 text-gray-600">
-                    <Download className="h-4 w-4" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Button className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
+                  <Button
+                    className="w-full"
+                    onClick={handleBorrow}
+                    disabled={borrowBookMutation.isPending || book.stocks === 0}
+                  >
+                    <BookText className="h-4 w-4 mr-2" />
+                    {borrowBookMutation.isPending
+                      ? "Meminjam..."
+                      : book.stocks === 0
+                      ? "Stok Habis"
+                      : "Pinjam"}
                   </Button>
                   <Button variant="outline" className="w-full">
                     <Heart className="h-4 w-4 mr-2" />
-                    Favorite
+                    Favorit
                   </Button>
                 </div>
 
                 <Button variant="outline" className="w-full">
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share Book
+                  Bagikan Buku
                 </Button>
 
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">File Size:</span>
-                    <span className="font-medium">{bookData.fileSize}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Pages:</span>
-                    <span className="font-medium">{bookData.pages}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Language:</span>
-                    <span className="font-medium">{bookData.language}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Format:</span>
-                    <span className="font-medium">PDF</span> 
+                    <span className="text-gray-600">Stok Tersedia:</span>
+                    <span className="font-medium">{book.stocks}</span>
                   </div>
                 </div>
               </div>
@@ -216,104 +307,60 @@ Topik utama:
         </div>
 
         <div className="lg:col-span-2 space-y-8">
-          {/* Header */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Badge variant="secondary">{bookData.jenisBuku}</Badge> 
+              <Badge variant="secondary">{book.jenisBuku}</Badge>
               <div className="flex items-center gap-1 text-gray-600">
                 <Calendar className="h-4 w-4" />
-                <span>{bookData.year}</span>
+                <span>{book.year}</span>
               </div>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {bookData.title}
+              {book.title}
             </h1>
             <div className="flex items-center gap-2 text-lg text-gray-600 mb-4">
               <User className="h-5 w-5" />
-              <span>by {bookData.author}</span>
+              <span>oleh {book.author}</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {bookData.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            {/* Menghilangkan tag karena tidak ada di backend */}
           </div>
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Description</h2>
+              <h2 className="text-xl font-semibold mb-4">Deskripsi</h2>
               <div className="prose prose-gray max-w-none">
-
-                {bookData.description.split("\n").map((paragraph, index) => (
-                  <p key={index} className="mb-4 text-gray-700 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+                <p className="mb-4 text-gray-700 leading-relaxed">
+                  Buku ini ditulis oleh {book.author} dan diterbitkan oleh{" "}
+                  {book.publisher} pada tahun {book.year}. Dengan ISBN{" "}
+                  {book.isbn}, buku ini termasuk dalam kategori {book.jenisBuku}
+                  .
+                </p>
               </div>
             </CardContent>
           </Card>
 
-
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Table of Contents
-              </h2>
-
-              <ul className="space-y-2">
-                {bookData.tableOfContents.map((chapter, index) => (
-                  <li
-                    key={index}
-                    className="text-gray-700 hover:text-blue-600 cursor-pointer transition-colors"
-                  >
-                    {chapter}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Book Information</h2>
+              <h2 className="text-xl font-semibold mb-4">Informasi Buku</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-600 font-medium">ISBN:</span>
-                    <span className="ml-2">{bookData.isbn}</span>
+                    <span className="ml-2">{book.isbn}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600 font-medium">
-                      Publisher:
-                    </span>
-                    <span className="ml-2">{bookData.publisher}</span> 
-                  </div>
-                  <div>
-                    <span className="text-gray-600 font-medium">
-                      Upload Date:
-                    </span>
-                    <span className="ml-2">{bookData.uploadDate}</span> 
+                    <span className="text-gray-600 font-medium">Penerbit:</span>
+                    <span className="ml-2">{book.publisher}</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <span className="text-gray-600 font-medium">Category:</span>
-                    <span className="ml-2">{bookData.jenisBuku}</span> 
+                    <span className="text-gray-600 font-medium">Kategori:</span>
+                    <span className="ml-2">{book.jenisBuku}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600 font-medium">Language:</span>
-                    <span className="ml-2">{bookData.language}</span> 
-                  </div>
-                  <div>
-                    <span className="text-gray-600 font-medium">
-                      Total Downloads:
-                    </span>
-                    <span className="ml-2">
-                     
-                    </span>
+                    <span className="text-gray-600 font-medium">Tahun:</span>
+                    <span className="ml-2">{book.year}</span>
                   </div>
                 </div>
               </div>
@@ -322,41 +369,80 @@ Topik utama:
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Reviews</h2>
-              <div className="space-y-4">
-    
-                {bookData.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="border-b border-gray-100 last:border-0 pb-4 last:pb-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{review.user}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          {review.date}
+              <h2 className="text-xl font-semibold mb-4">Ulasan</h2>
+              {isLoadingReviews ? (
+                <div className="text-center py-4">Memuat ulasan...</div>
+              ) : errorReviews ? (
+                <div className="text-center py-4 text-red-500">
+                  Kesalahan: Gagal mengambil ulasan.
+                </div>
+              ) : reviews && reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="border-b border-gray-100 last:border-0 pb-4 last:pb-0"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">
+                          {review.user.fullName}
                         </span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < review.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
+                      <p className="text-gray-700">{review.content}</p>
                     </div>
-                    <p className="text-gray-700">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-              <Button variant="outline" className="w-full mt-4">
-                Write a Review
-              </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Belum ada ulasan untuk buku ini.
+                </div>
+              )}
+              <form onSubmit={handleAddReview} className="mt-4 space-y-4">
+                <div>
+                  <Label htmlFor="review-content">Tulis Ulasan Anda</Label>
+                  <Textarea
+                    id="review-content"
+                    placeholder="Bagikan pemikiran Anda tentang buku ini..."
+                    value={newReviewContent}
+                    onChange={(e) => setNewReviewContent(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="review-rating">Rating (1-5)</Label>
+                  <Input
+                    id="review-rating"
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={newReviewRating === 0 ? "" : newReviewRating}
+                    onChange={(e) =>
+                      setNewReviewRating(parseInt(e.target.value) || 0)
+                    }
+                    className="w-24"
+                  />
+                </div>
+                <Button type="submit" disabled={addReviewMutation.isPending}>
+                  {addReviewMutation.isPending ? "Mengirim..." : "Kirim Ulasan"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>

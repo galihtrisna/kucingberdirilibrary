@@ -17,7 +17,6 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
-  Download,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,7 +44,6 @@ interface Book {
   digitalAvail: boolean;
   jenisBuku: string;
   status?: string;
-  downloads?: number;
 }
 
 const API_BASE_URL = process.env.VITE_API_BASE_URL;
@@ -89,7 +87,6 @@ const AdminBooks = () => {
       return fetchedBooks.map((book) => ({
         ...book,
         status: book.stocks > 0 ? "approved" : "pending",
-        downloads: Math.floor(Math.random() * 500),
       }));
     },
     refetchOnWindowFocus: false,
@@ -109,13 +106,13 @@ const AdminBooks = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["adminBooks"] });
       toast({
-        title: "Success",
+        title: "Berhasil",
         description: `Buku ${variables.bookId} berhasil diperbarui.`,
       });
       setIsEditDialogOpen(false);
     },
     onError: (error: any) => {
-      let errorMessage = "Failed to update book.";
+      let errorMessage = "Gagal memperbarui buku.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage =
           error.response.data.data ||
@@ -126,7 +123,7 @@ const AdminBooks = () => {
         }
       }
       toast({
-        title: "Update Failed",
+        title: "Pembaharuan Gagal",
         description: errorMessage,
         variant: "destructive",
       });
@@ -141,12 +138,12 @@ const AdminBooks = () => {
     onSuccess: (data, bookId) => {
       queryClient.invalidateQueries({ queryKey: ["adminBooks"] });
       toast({
-        title: "Success",
+        title: "Berhasil",
         description: `Buku ${bookId} berhasil dihapus.`,
       });
     },
     onError: (error: any) => {
-      let errorMessage = "Failed to delete book.";
+      let errorMessage = "Gagal menghapus buku.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage =
           error.response.data.data ||
@@ -157,7 +154,7 @@ const AdminBooks = () => {
         }
       }
       toast({
-        title: "Deletion Failed",
+        title: "Penghapusan Gagal",
         description: errorMessage,
         variant: "destructive",
       });
@@ -187,7 +184,6 @@ const AdminBooks = () => {
       publisher: book.publisher,
       year: book.year,
       isbn: book.isbn,
-      thumbnail: book.thumbnail,
       stocks: book.stocks,
       digitalAvail: book.digitalAvail,
       jenisBuku: book.jenisBuku,
@@ -211,13 +207,13 @@ const AdminBooks = () => {
   const getStatusBadge = (status: string | undefined) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Disetujui</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">Menunggu</Badge>;
       case "rejected":
-        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+        return <Badge className="bg-red-100 text-red-800">Ditolak</Badge>;
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="secondary">Tidak Diketahui</Badge>;
     }
   };
 
@@ -233,22 +229,22 @@ const AdminBooks = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Manage Books</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Kelola Buku</h1>
         <p className="text-xl text-gray-600">
-          Review, approve, and manage all books in the library
+          Tinjau, setujui, dan kelola semua buku di perpustakaan
         </p>
       </div>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Filter Books</CardTitle>
+          <CardTitle>Saring Buku</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by title or author..."
+                placeholder="Cari berdasarkan judul atau penulis..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -256,13 +252,13 @@ const AdminBooks = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Saring berdasarkan status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="approved">Disetujui</SelectItem>
+                <SelectItem value="pending">Menunggu</SelectItem>
+                <SelectItem value="rejected">Ditolak</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -271,20 +267,20 @@ const AdminBooks = () => {
 
       {isLoading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">Loading books...</p>
+          <p className="text-gray-600 text-lg">Memuat buku...</p>
         </div>
       ) : error ? (
         <div className="text-center py-12">
           <p className="text-red-500 text-lg">
-            Error: Failed to fetch books. {error.message}
+            Kesalahan: Gagal mengambil buku. {error.message}
           </p>
-          <p className="text-gray-500 text-sm mt-2">Please try again later.</p>
+          <p className="text-gray-500 text-sm mt-2">Silakan coba lagi nanti.</p>
         </div>
       ) : filteredBooks.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-gray-500 text-lg">
-              No books found matching your filters.
+              Tidak ada buku yang ditemukan sesuai filter Anda.
             </p>
           </CardContent>
         </Card>
@@ -298,7 +294,7 @@ const AdminBooks = () => {
                     <h3 className="font-semibold text-lg text-gray-800">
                       {book.title}
                     </h3>
-                    <p className="text-gray-600">by {book.author}</p>
+                    <p className="text-gray-600">oleh {book.author}</p>
                     <p className="text-sm text-gray-500">{book.jenisBuku}</p>
                   </div>
 
@@ -307,21 +303,16 @@ const AdminBooks = () => {
                   </div>
 
                   <div className="lg:col-span-2">
-                    <p className="text-sm text-gray-600">Year: {book.year}</p>{" "}
-                    {/* Menampilkan Year */}
+                    <p className="text-sm text-gray-600">Tahun: {book.year}</p>
                     <p className="text-sm text-gray-600">
-                      Publisher: {book.publisher}
-                    </p>{" "}
+                      Penerbit: {book.publisher}
+                    </p>
                   </div>
 
                   <div className="lg:col-span-2">
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                      <Download className="h-4 w-4" />
-                      {book.downloads} downloads
-                    </p>
                     <p className="text-sm text-gray-600">
-                      Stocks: {book.stocks}
-                    </p>{" "}
+                      Stok: {book.stocks}
+                    </p>
                   </div>
 
                   <div className="lg:col-span-2">
@@ -329,11 +320,11 @@ const AdminBooks = () => {
                       <Button size="sm" variant="outline" asChild>
                         <Link to={`/book/${book.id}`}>
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          Lihat
                         </Link>
                       </Button>
 
-                      {book.status === "pending" && ( 
+                      {book.status === "pending" && (
                         <>
                           <Button
                             size="sm"
@@ -341,7 +332,7 @@ const AdminBooks = () => {
                             onClick={() => handleApprove(book.id)}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
+                            Setujui
                           </Button>
                           <Button
                             size="sm"
@@ -349,12 +340,12 @@ const AdminBooks = () => {
                             onClick={() => handleReject(book.id)}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
-                            Reject
+                            Tolak
                           </Button>
                         </>
                       )}
 
-                      {book.status === "approved" && ( 
+                      {book.status === "approved" && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -371,7 +362,7 @@ const AdminBooks = () => {
                         onClick={() => handleDelete(book.id)}
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
+                        Hapus
                       </Button>
                     </div>
                   </div>
@@ -382,17 +373,16 @@ const AdminBooks = () => {
         </div>
       )}
 
-      {/* Modal Edit Buku */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Book</DialogTitle>
+            <DialogTitle>Edit Buku</DialogTitle>
           </DialogHeader>
           {currentBookToEdit && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-title" className="text-right">
-                  Title
+                  Judul
                 </Label>
                 <Input
                   id="edit-title"
@@ -405,7 +395,7 @@ const AdminBooks = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-author" className="text-right">
-                  Author
+                  Penulis
                 </Label>
                 <Input
                   id="edit-author"
@@ -418,7 +408,7 @@ const AdminBooks = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-publisher" className="text-right">
-                  Publisher
+                  Penerbit
                 </Label>
                 <Input
                   id="edit-publisher"
@@ -431,7 +421,7 @@ const AdminBooks = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-year" className="text-right">
-                  Year
+                  Tahun
                 </Label>
                 <Input
                   id="edit-year"
@@ -445,7 +435,7 @@ const AdminBooks = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-stocks" className="text-right">
-                  Stocks
+                  Stok
                 </Label>
                 <Input
                   id="edit-stocks"
@@ -462,7 +452,7 @@ const AdminBooks = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-jenisBuku" className="text-right">
-                  Category
+                  Kategori
                 </Label>
                 <Select
                   value={editFormData.jenisBuku || ""}
@@ -471,39 +461,25 @@ const AdminBooks = () => {
                   }
                 >
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Pilih kategori" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="science">Science</SelectItem>
-                    <SelectItem value="literature">Literature</SelectItem>
-                    <SelectItem value="history">History</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="programming">Programming</SelectItem>
-                    <SelectItem value="design">Design</SelectItem>
-                    <SelectItem value="psychology">Psychology</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="technology">Teknologi</SelectItem>
+                    <SelectItem value="science">Sains</SelectItem>
+                    <SelectItem value="literature">Sastra</SelectItem>
+                    <SelectItem value="history">Sejarah</SelectItem>
+                    <SelectItem value="education">Edukasi</SelectItem>
+                    <SelectItem value="business">Bisnis</SelectItem>
+                    <SelectItem value="programming">Pemrograman</SelectItem>
+                    <SelectItem value="design">Desain</SelectItem>
+                    <SelectItem value="psychology">Psikologi</SelectItem>
+                    <SelectItem value="other">Lainnya</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-thumbnail" className="text-right">
-                  Thumbnail URL
-                </Label>
-                <Input
-                  id="edit-thumbnail"
-                  type="url"
-                  value={editFormData.thumbnail || ""}
-                  onChange={(e) =>
-                    handleEditFormChange("thumbnail", e.target.value)
-                  }
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-digitalAvail" className="text-right">
-                  Digital Available
+                  Tersedia Digital
                 </Label>
                 <Select
                   value={editFormData.digitalAvail ? "true" : "false"}
@@ -515,8 +491,8 @@ const AdminBooks = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="true">Yes</SelectItem>
-                    <SelectItem value="false">No</SelectItem>
+                    <SelectItem value="true">Ya</SelectItem>
+                    <SelectItem value="false">Tidak</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -525,11 +501,11 @@ const AdminBooks = () => {
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                Batal
               </Button>
             </DialogClose>
             <Button type="submit" onClick={handleSaveEdit}>
-              Save changes
+              Simpan Perubahan
             </Button>
           </DialogFooter>
         </DialogContent>

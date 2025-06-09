@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Grid, List, Star, Download } from "lucide-react";
+import { Search, Grid, List, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -51,24 +51,18 @@ const Catalog = () => {
     },
   });
 
-  const {
-    data: categoriesFromApi,
-    isLoading: categoriesLoading,
-    error: categoriesError,
-  } = useQuery<string[]>({
+  const { data: categoriesFromApi } = useQuery<string[]>({
     queryKey: ["bookJenis"],
     queryFn: async () => {
-    
       const response = await api.get("/book/jenis");
-      return ["All Categories", ...response.data];
+      return ["Semua Kategori", ...response.data];
     },
-    initialData: ["All Categories"],
+    initialData: ["Semua Kategori"],
     refetchOnWindowFocus: false,
   });
 
-  const availableCategories = categoriesFromApi || ["All Categories"];
+  const availableCategories = categoriesFromApi || ["Semua Kategori"];
 
- 
   const filteredBooks = (books || [])
     .filter((book) => {
       const matchesSearch =
@@ -80,7 +74,6 @@ const Catalog = () => {
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
-     
       if (sortBy === "title") {
         return a.title.localeCompare(b.title);
       }
@@ -90,17 +83,16 @@ const Catalog = () => {
       if (sortBy === "year") {
         return a.year - b.year;
       }
-      
-      return 0; 
+
+      return 0;
     });
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Book Catalog</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Katalog Buku</h1>
         <p className="text-gray-600">
-          Browse our collection of {books ? books.length : 0} books
+          Jelajahi koleksi kami sebanyak {books ? books.length : 0} buku
         </p>
       </div>
 
@@ -109,7 +101,7 @@ const Catalog = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search books or authors..."
+              placeholder="Cari buku atau penulis..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -118,13 +110,13 @@ const Catalog = () => {
 
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger>
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder="Kategori" />
             </SelectTrigger>
             <SelectContent>
               {availableCategories.map((category) => (
                 <SelectItem
                   key={category}
-                  value={category === "All Categories" ? "all" : category}
+                  value={category === "Semua Kategori" ? "all" : category}
                 >
                   {category}
                 </SelectItem>
@@ -134,12 +126,12 @@ const Catalog = () => {
 
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger>
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder="Urutkan berdasarkan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="title">Title</SelectItem>
-              <SelectItem value="author">Author</SelectItem>
-              <SelectItem value="year">Year</SelectItem>
+              <SelectItem value="title">Judul</SelectItem>
+              <SelectItem value="author">Penulis</SelectItem>
+              <SelectItem value="year">Tahun</SelectItem>
             </SelectContent>
           </Select>
 
@@ -162,28 +154,29 @@ const Catalog = () => {
         </div>
 
         <p className="text-sm text-gray-600">
-          Showing {filteredBooks.length} of {books ? books.length : 0} books
+          Menampilkan {filteredBooks.length} dari {books ? books.length : 0}{" "}
+          buku
         </p>
       </div>
 
       {isLoading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">Loading books...</p>
+          <p className="text-gray-600 text-lg">Memuat buku...</p>
         </div>
       ) : error ? (
         <div className="text-center py-12">
           <p className="text-red-500 text-lg">
-            Error: Failed to fetch books. {error.message}
+            Kesalahan: Gagal mengambil buku. {error.message}
           </p>
-          <p className="text-gray-500 text-sm mt-2">Please try again later.</p>
+          <p className="text-gray-500 text-sm mt-2">Silakan coba lagi nanti.</p>
         </div>
       ) : filteredBooks.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg">
-            No books found matching your criteria.
+            Tidak ada buku yang ditemukan sesuai kriteria Anda.
           </p>
           <p className="text-gray-500 text-sm mt-2">
-            Try adjusting your search or filters.
+            Coba sesuaikan pencarian atau filter Anda.
           </p>
         </div>
       ) : viewMode === "grid" ? (
@@ -195,18 +188,13 @@ const Catalog = () => {
             >
               <div className="aspect-[3/4] overflow-hidden rounded-t-lg">
                 <img
-                  src={"https://picsum.photos/200/300"}
-                  alt={book.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {/* <img
                   src={
                     book.thumbnail ||
-                    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=600&fit=crop"
+                    "https://via.placeholder.com/300x400?text=Tidak+Ada+Sampul"
                   }
                   alt={book.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                /> */}
+                />
               </div>
               <CardContent className="p-4">
                 <div className="space-y-3">
@@ -218,12 +206,12 @@ const Catalog = () => {
                   <h3 className="font-semibold text-sm text-gray-800 line-clamp-2">
                     {book.title}
                   </h3>
-                  <p className="text-xs text-gray-600">by {book.author}</p>
+                  <p className="text-xs text-gray-600">oleh {book.author}</p>
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>{book.year}</span>
                   </div>
                   <Button size="sm" className="w-full" asChild>
-                    <Link to={`/book/${book.id}`}>View Details</Link>
+                    <Link to={`/book/${book.id}`}>Lihat Detail</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -237,35 +225,30 @@ const Catalog = () => {
               <CardContent className="p-6">
                 <div className="flex gap-6">
                   <img
-                    src={"https://picsum.photos/200/300"}
-                    alt={book.title}
-                    className="w-24 h-32 object-cover rounded-lg flex-shrink-0"
-                  />
-                  {/* <img
                     src={
                       book.thumbnail ||
-                      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=600&fit=crop"
+                      "https://via.placeholder.com/300x400?text=Tidak+Ada+Sampul"
                     }
                     alt={book.title}
                     className="w-24 h-32 object-cover rounded-lg flex-shrink-0"
-                  /> */}
+                  />
                   <div className="flex-1 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-semibold text-lg text-gray-800">
                           {book.title}
                         </h3>
-                        <p className="text-gray-600">by {book.author}</p>
+                        <p className="text-gray-600">oleh {book.author}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-6 text-sm text-gray-500">
                       <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
                         {book.jenisBuku}
                       </span>
-                      <span>Year: {book.year}</span>
+                      <span>Tahun: {book.year}</span>
                     </div>
                     <Button asChild>
-                      <Link to={`/book/${book.id}`}>View Details</Link>
+                      <Link to={`/book/${book.id}`}>Lihat Detail</Link>
                     </Button>
                   </div>
                 </div>
@@ -278,16 +261,15 @@ const Catalog = () => {
       {filteredBooks.length === 0 && !isLoading && !error && (
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg">
-            No books found matching your criteria.
+            Tidak ada buku yang ditemukan sesuai kriteria Anda.
           </p>
           <p className="text-gray-500 text-sm mt-2">
-            Try adjusting your search or filters.
+            Coba sesuaikan pencarian atau filter Anda.
           </p>
         </div>
       )}
     </div>
   );
 };
-
 
 export default Catalog;

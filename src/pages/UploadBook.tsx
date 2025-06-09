@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, FileText, CheckCircle } from "lucide-react";
+import { Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
@@ -22,9 +21,9 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("jwtToken"); 
+    const token = localStorage.getItem("jwtToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; 
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -37,23 +36,19 @@ const UploadBook = () => {
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    // description: "",
     jenisBuku: "",
     isbn: "",
-    year: "", 
-    // language: ""
-    publisher: "", 
-    stocks: 1, 
-    thumbnail: "", 
-    digitalAvail: true, 
+    year: "",
+    publisher: "",
+    stocks: 1,
+    thumbnail: "",
+    digitalAvail: true,
   });
-  const [file, setFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    
     if (
       !formData.title ||
       !formData.author ||
@@ -64,25 +59,15 @@ const UploadBook = () => {
       !formData.thumbnail
     ) {
       toast({
-        title: "Validation Error",
+        title: "Kesalahan Validasi",
         description:
-          "Please fill in all required book information (Title, Author, Category, ISBN, Year, Publisher, Thumbnail).",
+          "Mohon isi semua informasi buku yang diperlukan (Judul, Penulis, Kategori, ISBN, Tahun, Penerbit, Gambar Sampul).",
         variant: "destructive",
       });
       return;
     }
 
-    // if (!file) { 
-    //   toast({
-    //     title: "File Required",
-    //     description: "Please select a PDF file to upload.",
-    //     variant: "destructive"
-    //   });
-    //   return;
-    // }
-
     try {
-     
       const payload = {
         title: formData.title,
         author: formData.author,
@@ -95,32 +80,28 @@ const UploadBook = () => {
         jenisBuku: formData.jenisBuku,
       };
 
-      const response = await api.post("/book/add", payload);
+      await api.post("/book/add", payload);
 
       toast({
-        title: "Book Uploaded Successfully!",
+        title: "Buku Berhasil Diunggah!",
         description:
-          "Your book has been submitted for review and will be available after approval.",
+          "Buku Anda telah diajukan untuk ditinjau dan akan tersedia setelah disetujui.",
       });
 
-      
       setFormData({
         title: "",
         author: "",
-        // description: "",
         jenisBuku: "",
         isbn: "",
         year: "",
-        // language: "",
         publisher: "",
         stocks: 1,
         thumbnail: "",
         digitalAvail: true,
       });
-      setFile(null); 
     } catch (error: any) {
       let errorMessage =
-        "An unexpected error occurred during upload. Please try again.";
+        "Terjadi kesalahan yang tidak terduga saat mengunggah. Silakan coba lagi.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage =
           error.response.data.data ||
@@ -131,7 +112,7 @@ const UploadBook = () => {
         }
       }
       toast({
-        title: "Upload Failed",
+        title: "Unggah Gagal",
         description: errorMessage,
         variant: "destructive",
       });
@@ -142,19 +123,13 @@ const UploadBook = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Upload a Book</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Unggah Buku</h1>
         <p className="text-xl text-gray-600">
-          Contribute to our digital library by sharing knowledge with the
-          community
+          Berkontribusi ke perpustakaan digital kami dengan berbagi pengetahuan
+          dengan komunitas
         </p>
       </div>
 
@@ -164,53 +139,41 @@ const UploadBook = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5" />
-                Book Information
+                Informasi Buku
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="title">Book Title *</Label>
+                    <Label htmlFor="title">Judul Buku *</Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) =>
                         handleInputChange("title", e.target.value)
                       }
-                      placeholder="Enter book title"
+                      placeholder="Masukkan judul buku"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="author">Author *</Label>
+                    <Label htmlFor="author">Penulis *</Label>
                     <Input
                       id="author"
                       value={formData.author}
                       onChange={(e) =>
                         handleInputChange("author", e.target.value)
                       }
-                      placeholder="Enter author name"
+                      placeholder="Masukkan nama penulis"
                       required
                     />
                   </div>
                 </div>
 
-                {/* <div>
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    placeholder="Provide a brief description of the book..."
-                    rows={4}
-                    required
-                  />
-                </div> */}
-
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="jenisBuku">Category *</Label>
+                    <Label htmlFor="jenisBuku">Kategori *</Label>
                     <Select
                       value={formData.jenisBuku}
                       onValueChange={(value) =>
@@ -218,24 +181,24 @@ const UploadBook = () => {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder="Pilih kategori" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="science">Science</SelectItem>
-                        <SelectItem value="literature">Literature</SelectItem>
-                        <SelectItem value="history">History</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="business">Business</SelectItem>
-                        <SelectItem value="programming">Programming</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
-                        <SelectItem value="psychology">Psychology</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="technology">Teknologi</SelectItem>
+                        <SelectItem value="science">Sains</SelectItem>
+                        <SelectItem value="literature">Sastra</SelectItem>
+                        <SelectItem value="history">Sejarah</SelectItem>
+                        <SelectItem value="education">Edukasi</SelectItem>
+                        <SelectItem value="business">Bisnis</SelectItem>
+                        <SelectItem value="programming">Pemrograman</SelectItem>
+                        <SelectItem value="design">Desain</SelectItem>
+                        <SelectItem value="psychology">Psikologi</SelectItem>
+                        <SelectItem value="other">Lainnya</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="year">Publish Year *</Label>
+                    <Label htmlFor="year">Tahun Terbit *</Label>
                     <Input
                       id="year"
                       value={formData.year}
@@ -247,21 +210,8 @@ const UploadBook = () => {
                       required
                     />
                   </div>
-                  {/* <div>
-                    <Label htmlFor="language">Language</Label>
-                    <Select value={formData.language} onValueChange={(value) => handleInputChange("language", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="indonesian">Indonesian</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
                   <div>
-                    <Label htmlFor="publisher">Publisher *</Label>
+                    <Label htmlFor="publisher">Penerbit *</Label>
                     <Input
                       id="publisher"
                       value={formData.publisher}
@@ -286,7 +236,7 @@ const UploadBook = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="thumbnail">Thumbnail URL *</Label>
+                  <Label htmlFor="thumbnail">URL Gambar Sampul *</Label>
                   <Input
                     id="thumbnail"
                     type="url"
@@ -300,35 +250,15 @@ const UploadBook = () => {
                   {formData.thumbnail && (
                     <img
                       src={formData.thumbnail}
-                      alt="Thumbnail Preview"
+                      alt="Pratinjau Gambar Sampul"
                       className="mt-2 w-24 h-32 object-cover rounded"
                     />
                   )}
                 </div>
 
-               
-                {/* <div>
-                  <Label htmlFor="file">Book File (PDF) *</Label>
-                  <div className="mt-2">
-                    <Input
-                      id="file"
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      required
-                    />
-                    {file && (
-                      <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4" />
-                        {file.name} selected
-                      </p>
-                    )}
-                  </div>
-                </div> */}
-
                 <Button type="submit" className="w-full" size="lg">
                   <Upload className="h-4 w-4 mr-2" />
-                  Upload Book
+                  Unggah Buku
                 </Button>
               </form>
             </CardContent>
@@ -340,28 +270,28 @@ const UploadBook = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Upload Guidelines
+                Pedoman Unggah
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">
-                  File Requirements
+                  Persyaratan File
                 </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Thumbnail URL (JPG/PNG)</li>
-                  <li>• (Abaikan untuk upload file PDF saat ini)</li>
-                  <li>• Clear, readable content</li>
+                  <li>• URL Gambar Sampul (JPG/PNG)</li>
+                  <li>• (Abaikan untuk unggah file PDF saat ini)</li>
+                  <li>• Konten jelas dan mudah dibaca</li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">
-                  Content Policy
+                  Kebijakan Konten
                 </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• No copyrighted material</li>
-                  <li>• Educational content preferred</li>
-                  <li>• Original works welcome</li>
+                  <li>• Tidak ada materi berhak cipta</li>
+                  <li>• Konten pendidikan lebih disukai</li>
+                  <li>• Karya asli dipersilakan</li>
                 </ul>
               </div>
             </CardContent>
@@ -370,7 +300,7 @@ const UploadBook = () => {
           <Card>
             <CardContent className="p-6">
               <h3 className="font-semibold text-gray-800 mb-3">
-                Review Process
+                Proses Peninjauan
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -378,7 +308,7 @@ const UploadBook = () => {
                     1
                   </div>
                   <span className="text-sm text-gray-600">
-                    Submit your book
+                    Ajukan buku Anda
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -386,7 +316,7 @@ const UploadBook = () => {
                     2
                   </div>
                   <span className="text-sm text-gray-600">
-                    Admin review (1-3 days)
+                    Peninjauan admin (1-3 hari)
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -394,7 +324,7 @@ const UploadBook = () => {
                     3
                   </div>
                   <span className="text-sm text-gray-600">
-                    Published in catalog
+                    Diterbitkan di katalog
                   </span>
                 </div>
               </div>

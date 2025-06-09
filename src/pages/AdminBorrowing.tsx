@@ -10,105 +10,150 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Search,
-  Download,
-  Calendar,
-  User,
-  BookOpen,
-  TrendingUp,
-} from "lucide-react";
+import { Search, Calendar, User, BookOpen } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
+
+interface BorrowRecFromAPI {
+  id: number;
+  book: {
+    title: string;
+    author: string;
+    jenisBuku: string;
+  };
+  user: {
+    username: string;
+    fullName: string;
+  };
+  startBorrow: string;
+  endBorrow: string | null;
+  status: string;
+}
+
+const API_BASE_URL = process.env.VITE_API_BASE_URL;
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const AdminBorrowing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const borrowingRecords = [
-    {
-      id: 1,
-      user: "Galih Trisna",
-      email: "galih.trisna@email.com",
-      book: "Pengantar Ilmu Komputer",
-      author: "Dr. Sari Lestari",
-      borrowDate: "2024-01-15",
-      downloadDate: "2024-01-15",
-      status: "downloaded",
-      category: "Informatika",
+  const {
+    data: borrowingRecords,
+    isLoading,
+    error,
+  } = useQuery<BorrowRecFromAPI[]>({
+    queryKey: ["adminBorrowingRecords"],
+    queryFn: async () => {
+      const response = await api.get("/borrow/history");
+      return response.data;
     },
-    {
-      id: 2,
-      user: "Dewi Rahma",
-      email: "dewi.rahma@email.com",
-      book: "Pemrograman Web Modern",
-      author: "Budi Santoso",
-      borrowDate: "2024-01-14",
-      downloadDate: "2024-01-14",
-      status: "downloaded",
-      category: "Pemrograman",
+    refetchOnWindowFocus: false,
+  });
+
+  const returnBookMutation = useMutation({
+    mutationFn: async (borrowId: number) => {
+      const token = localStorage.getItem("token");
+      const response = await api.post(`/borrow/return/${borrowId}`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
     },
-    {
-      id: 3,
-      user: "Aldi Nugraha",
-      email: "aldi.nugraha@email.com",
-      book: "Panduan Digital Marketing",
-      author: "Rina Kurnia",
-      borrowDate: "2024-01-13",
-      downloadDate: null,
-      status: "borrowed",
-      category: "Bisnis Digital",
+
+    onSuccess: (message, borrowId) => {
+      queryClient.invalidateQueries({ queryKey: ["adminBorrowingRecords"] });
+      queryClient.invalidateQueries({ queryKey: ["adminBooks"] });
+      toast({
+        title: "Berhasil",
+        description: `Peminjaman ${borrowId} berhasil dikembalikan.`,
+      });
     },
-    {
-      id: 4,
-      user: "Nadia Aulia",
-      email: "nadia.aulia@email.com",
-      book: "Dasar-dasar Machine Learning",
-      author: "Dr. Andi Prasetyo",
-      borrowDate: "2024-01-12",
-      downloadDate: "2024-01-13",
-      status: "downloaded",
-      category: "Informatika",
+    onError: (error: any) => {
+      let errorMessage = "Gagal mengembalikan buku.";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.data ||
+          error.response.data.message ||
+          error.message;
+        if (typeof errorMessage === "object" && errorMessage !== null) {
+          errorMessage = JSON.stringify(errorMessage);
+        }
+      }
+      toast({
+        title: "Pengembalian Gagal",
+        description: errorMessage,
+        variant: "destructive",
+      });
     },
-  ];
+  });
+
+  const handleReturnBook = (borrowId: number) => {
+    returnBookMutation.mutate(borrowId);
+  };
 
   const stats = [
     {
-      icon: Download,
-      label: "Total Downloads",
-      value: "1,234",
-      change: "+15.7%",
+      icon: BookOpen,
+      label: "Buku Dipinjam",
+      value: isLoading
+        ? "..."
+        : (borrowingRecords || [])
+            .filter((rec) => rec.status.toLowerCase() === "borrowed")
+            .length.toLocaleString(),
     },
-    { icon: BookOpen, label: "Books Borrowed", value: "567", change: "+8.3%" },
-    { icon: User, label: "Active Borrowers", value: "89", change: "+12.1%" },
     {
-      icon: TrendingUp,
-      label: "Downloads Today",
-      value: "45",
-      change: "+22.5%",
+      icon: User,
+      label: "Pengguna Aktif Meminjam",
+      value: isLoading
+        ? "..."
+        : new Set(
+            (borrowingRecords || [])
+              .filter((rec) => rec.status.toLowerCase() === "borrowed")
+              .map((rec) => rec.user.username)
+          ).size.toLocaleString(),
     },
   ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "downloaded":
-        return (
-          <Badge className="bg-green-100 text-green-800">Downloaded</Badge>
-        );
       case "borrowed":
-        return <Badge className="bg-blue-100 text-blue-800">Borrowed</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">Dipinjam</Badge>;
       case "returned":
-        return <Badge className="bg-gray-100 text-gray-800">Returned</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-800">Dikembalikan</Badge>
+        );
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="secondary">Tidak Diketahui</Badge>;
     }
   };
 
-  const filteredRecords = borrowingRecords.filter((record) => {
+  const filteredRecords = (borrowingRecords || []).filter((record) => {
     const matchesSearch =
-      record.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.book.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.email.toLowerCase().includes(searchTerm.toLowerCase());
+      record.user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.book.author.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
-      statusFilter === "all" || record.status === statusFilter;
+      statusFilter === "all" || record.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -116,15 +161,14 @@ const AdminBorrowing = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          Borrowing & Download Reports
+          Laporan Peminjaman
         </h1>
         <p className="text-xl text-gray-600">
-          Track book downloads and borrowing activity across the platform
+          Lacak aktivitas peminjaman buku di platform
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {stats.map((stat, index) => (
           <Card key={index}>
             <CardContent className="p-6">
@@ -134,10 +178,6 @@ const AdminBorrowing = () => {
                   <p className="text-3xl font-bold text-gray-800">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-                    <TrendingUp className="h-3 w-3" />
-                    {stat.change}
-                  </p>
                 </div>
                 <stat.icon className="h-8 w-8 text-blue-600" />
               </div>
@@ -146,17 +186,16 @@ const AdminBorrowing = () => {
         ))}
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Filter Records</CardTitle>
+          <CardTitle>Saring Catatan</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by user, book, or email..."
+                placeholder="Cari berdasarkan pengguna, buku, atau email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -164,86 +203,103 @@ const AdminBorrowing = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Saring berdasarkan status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="downloaded">Downloaded</SelectItem>
-                <SelectItem value="borrowed">Borrowed</SelectItem>
-                <SelectItem value="returned">Returned</SelectItem>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="borrowed">Dipinjam</SelectItem>
+                <SelectItem value="returned">Dikembalikan</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Records List */}
-      <div className="space-y-4">
-        {filteredRecords.map((record) => (
-          <Card key={record.id}>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                <div className="lg:col-span-3">
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    {record.user}
-                  </h3>
-                  <p className="text-gray-600">{record.email}</p>
-                </div>
-
-                <div className="lg:col-span-3">
-                  <h4 className="font-medium text-gray-800">{record.book}</h4>
-                  <p className="text-sm text-gray-600">by {record.author}</p>
-                  <p className="text-xs text-gray-500">{record.category}</p>
-                </div>
-
-                <div className="lg:col-span-2">
-                  {getStatusBadge(record.status)}
-                </div>
-
-                <div className="lg:col-span-2">
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                    <Calendar className="h-4 w-4" />
-                    Borrowed: {record.borrowDate}
-                  </div>
-                  {record.downloadDate && (
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <Download className="h-4 w-4" />
-                      Downloaded: {record.downloadDate}
-                    </div>
-                  )}
-                </div>
-
-                <div className="lg:col-span-2">
-                  <Button size="sm" variant="outline" className="w-full">
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredRecords.length === 0 && (
+      {isLoading ? (
+        <div className="text-center py-12">Memuat catatan peminjaman...</div>
+      ) : error ? (
+        <div className="text-center py-12 text-red-500">
+          Kesalahan: Gagal mengambil catatan peminjaman. {error.message}
+        </div>
+      ) : filteredRecords.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-gray-500 text-lg">
-              No records found matching your filters.
+              Tidak ada catatan yang ditemukan sesuai filter Anda.
             </p>
           </CardContent>
         </Card>
+      ) : (
+        <div className="space-y-4">
+          {filteredRecords.map((record) => (
+            <Card key={record.id}>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                  <div className="lg:col-span-3">
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      {record.user.fullName}
+                    </h3>
+                    <p className="text-gray-600">{record.user.username}</p>
+                  </div>
+
+                  <div className="lg:col-span-3">
+                    <h4 className="font-medium text-gray-800">
+                      {record.book.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      oleh {record.book.author}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {record.book.jenisBuku}
+                    </p>
+                  </div>
+
+                  <div className="lg:col-span-2">
+                    {getStatusBadge(record.status.toLowerCase())}
+                  </div>
+
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                      <Calendar className="h-4 w-4" />
+                      Tanggal Pinjam:{" "}
+                      {new Date(record.startBorrow).toLocaleDateString()}
+                    </div>
+                    {record.endBorrow && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <Calendar className="h-4 w-4" />
+                        Tanggal Kembali:{" "}
+                        {new Date(record.endBorrow).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="lg:col-span-2">
+                    {record.status.toLowerCase() === "borrowed" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleReturnBook(record.id)}
+                      >
+                        Tandai Dikembalikan
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
-      {/* Export Options */}
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Export Reports</CardTitle>
+          <CardTitle>Ekspor Laporan</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="outline">Export to CSV</Button>
-            <Button variant="outline">Export to PDF</Button>
-            <Button variant="outline">Generate Monthly Report</Button>
+            <Button variant="outline">Ekspor ke CSV</Button>
+            <Button variant="outline">Ekspor ke PDF</Button>
+            <Button variant="outline">Buat Laporan Bulanan</Button>
           </div>
         </CardContent>
       </Card>

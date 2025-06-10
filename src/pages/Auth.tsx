@@ -60,8 +60,8 @@ const Auth = () => {
 
       console.log("AUTH: Memberikan jeda sebelum navigasi...");
       setTimeout(() => {
-        navigate("/dashboard");
-        console.log("AUTH: Navigasi ke /dashboard.");
+        navigate("/catalog");
+        console.log("AUTH: Navigasi ke /catalog.");
       }, 100); // Memberi jeda 100ms
     } catch (error: any) {
       let errorMessage =

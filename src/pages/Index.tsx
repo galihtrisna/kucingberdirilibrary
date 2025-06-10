@@ -128,35 +128,6 @@ const Index = () => {
       </section>
 
       <section className="container mx-auto px-4">
-        {isLoadingBooks || isLoadingBorrows ? (
-          <div className="text-center py-12">Memuat statistik...</div>
-        ) : errorBooks || errorBorrows ? (
-          <div className="text-center py-12 text-red-500">
-            Kesalahan memuat statistik.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="text-center p-6 bg-white/70 backdrop-blur-sm border-0 shadow-lg"
-              >
-                <CardContent className="space-y-4">
-                  <stat.icon className="h-8 w-8 mx-auto text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {stat.value}
-                    </p>
-                    <p className="text-gray-600">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
             Buku Unggulan

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { getRoleFromToken } from "@/lib/jwt"; // Impor getRoleFromToken
 
 interface Book {
   id: number;
@@ -69,6 +70,7 @@ const BookDetail = () => {
   const queryClient = useQueryClient();
   const [newReviewContent, setNewReviewContent] = useState("");
   const [newReviewRating, setNewReviewRating] = useState(0);
+  const userRole = getRoleFromToken(); // Ambil peran pengguna
 
   const {
     data: book,
@@ -178,8 +180,7 @@ const BookDetail = () => {
       }
       toast({
         title: "Penambahan Ulasan Gagal",
-        // description: errorMessage,
-        description: "Kamu sudah pernah komentar",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -284,29 +285,36 @@ const BookDetail = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    className="w-full"
-                    onClick={handleBorrow}
-                    disabled={borrowBookMutation.isPending || book.stocks === 0}
-                  >
-                    <BookText className="h-4 w-4 mr-2" />
-                    {borrowBookMutation.isPending
-                      ? "Meminjam..."
-                      : book.stocks === 0
-                      ? "Stok Habis"
-                      : "Pinjam"}
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Heart className="h-4 w-4 mr-2" />
-                    Favorit
-                  </Button>
-                </div>
+                {/* Tombol Pinjam, Favorit, Bagikan hanya tampil jika role MEMBER */}
+                {userRole === "MEMBER" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        className="w-full"
+                        onClick={handleBorrow}
+                        disabled={
+                          borrowBookMutation.isPending || book.stocks === 0
+                        }
+                      >
+                        <BookText className="h-4 w-4 mr-2" />
+                        {borrowBookMutation.isPending
+                          ? "Meminjam..."
+                          : book.stocks === 0
+                          ? "Stok Habis"
+                          : "Pinjam"}
+                      </Button>
+                      <Button variant="outline" className="w-full">
+                        <Heart className="h-4 w-4 mr-2" />
+                        Favorit
+                      </Button>
+                    </div>
 
-                <Button variant="outline" className="w-full">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Bagikan Buku
-                </Button>
+                    <Button variant="outline" className="w-full">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Bagikan Buku
+                    </Button>
+                  </>
+                )}
 
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between">
@@ -335,7 +343,6 @@ const BookDetail = () => {
               <User className="h-5 w-5" />
               <span>oleh {book.author}</span>
             </div>
-            {/* Menghilangkan tag karena tidak ada di backend */}
           </div>
 
           <Card>
@@ -427,35 +434,40 @@ const BookDetail = () => {
                   Belum ada ulasan untuk buku ini.
                 </div>
               )}
-              <form onSubmit={handleAddReview} className="mt-4 space-y-4">
-                <div>
-                  <Label htmlFor="review-content">Tulis Ulasan Anda</Label>
-                  <Textarea
-                    id="review-content"
-                    placeholder="Bagikan pemikiran Anda tentang buku ini..."
-                    value={newReviewContent}
-                    onChange={(e) => setNewReviewContent(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="review-rating">Rating (1-5)</Label>
-                  <Input
-                    id="review-rating"
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={newReviewRating === 0 ? "" : newReviewRating}
-                    onChange={(e) =>
-                      setNewReviewRating(parseInt(e.target.value) || 0)
-                    }
-                    className="w-24"
-                  />
-                </div>
-                <Button type="submit" disabled={addReviewMutation.isPending}>
-                  {addReviewMutation.isPending ? "Mengirim..." : "Kirim Ulasan"}
-                </Button>
-              </form>
+              {/* Formulir Ulasan hanya tampil jika role MEMBER */}
+              {userRole === "MEMBER" && (
+                <form onSubmit={handleAddReview} className="mt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="review-content">Tulis Ulasan Anda</Label>
+                    <Textarea
+                      id="review-content"
+                      placeholder="Bagikan pemikiran Anda tentang buku ini..."
+                      value={newReviewContent}
+                      onChange={(e) => setNewReviewContent(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="review-rating">Rating (1-5)</Label>
+                    <Input
+                      id="review-rating"
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={newReviewRating === 0 ? "" : newReviewRating}
+                      onChange={(e) =>
+                        setNewReviewRating(parseInt(e.target.value) || 0)
+                      }
+                      className="w-24"
+                    />
+                  </div>
+                  <Button type="submit" disabled={addReviewMutation.isPending}>
+                    {addReviewMutation.isPending
+                      ? "Mengirim..."
+                      : "Kirim Ulasan"}
+                  </Button>
+                </form>
+              )}
             </CardContent>
           </Card>
         </div>

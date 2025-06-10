@@ -89,6 +89,31 @@ const Layout = ({ children }: LayoutProps) => {
                   {item.name}
                 </Link>
               ))}
+              {/* {userRole === "LIBRARIAN" && (
+                <Link
+                  to="/admin"
+                  className={`text-gray-600 hover:text-blue-600 transition-colors ${
+                    location.pathname.startsWith("/admin")
+                      ? "text-blue-600 font-medium"
+                      : ""
+                  }`}
+                >
+                  Admin
+                </Link>
+              )} */}
+            </nav>
+
+            <div className="hidden lg:flex items-center space-x-4 flex-1 max-w-md mx-8">
+              <div className="relative w-full">
+                {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Cari buku, penulis..."
+                  className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-300"
+                /> */}
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center space-x-4">
               {userRole === "LIBRARIAN" && (
                 <Link
                   to="/admin"
@@ -101,37 +126,31 @@ const Layout = ({ children }: LayoutProps) => {
                   Admin
                 </Link>
               )}
-            </nav>
 
-            <div className="hidden lg:flex items-center space-x-4 flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Cari buku, penulis..."
-                  className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-300"
-                />
+              <div className="hidden md:flex items-center space-x-4">
+                {userRole === "MEMBER" && (
+                  <>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/dashboard">
+                        <User className="h-4 w-4 mr-2" />
+                        Dasbor
+                      </Link>
+                    </Button>
+                  </>
+                )}
+                {userRole ? (
+                  <>
+                    <Button size="sm" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Keluar
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" asChild>
+                    <Link to="/auth">Masuk</Link>
+                  </Button>
+                )}
               </div>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-4">
-              {userRole ? (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/dashboard">
-                      <User className="h-4 w-4 mr-2" />
-                      Dasbor
-                    </Link>
-                  </Button>
-                  <Button size="sm" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Keluar
-                  </Button>
-                </>
-              ) : (
-                <Button size="sm" asChild>
-                  <Link to="/auth">Masuk</Link>
-                </Button>
-              )}
             </div>
 
             <Button
@@ -152,11 +171,11 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="md:hidden py-4 border-t border-gray-100">
               <div className="space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Cari buku..."
                     className="pl-10 bg-gray-50 border-gray-200"
-                  />
+                  /> */}
                 </div>
                 {navItems.map((item) => (
                   <Link

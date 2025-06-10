@@ -33,6 +33,14 @@ interface BorrowRecFromAPI {
   jenis: string;
 }
 
+interface UserProfile {
+  id: number;
+  username: string;
+  fullName: string;
+  role: string;
+  // Tambahkan field lain jika ada di response /auth/me
+}
+
 const API_BASE_URL = process.env.VITE_API_BASE_URL;
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -53,6 +61,23 @@ api.interceptors.request.use(
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Query untuk mendapatkan data pengguna yang sedang login
+  const {
+    data: currentUserData,
+    isLoading: isLoadingUser,
+    error: errorUser,
+  } = useQuery<UserProfile>({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      const token = localStorage.getItem("jwtToken");
+      if (!token) throw new Error("Tidak ada token ditemukan");
+      // Asumsi endpoint /auth/me mengembalikan object user profile
+      const response = await api.get("/auth/me"); // Sesuaikan jika endpointnya berbeda
+      return response.data.data; // Asumsi ApiResponse structure { data: UserProfile }
+    },
+    refetchOnWindowFocus: false,
+  });
 
   const {
     data: borrowHistory,
@@ -111,28 +136,33 @@ const UserDashboard = () => {
         : borrowedBooks.length.toLocaleString(),
       color: "text-blue-600",
     },
-    // { icon: Heart, label: "Favorit", value: "8", color: "text-red-600" },
+    // { icon: Heart, label: "Favorit", value: "8", color: "text-red-600" }, // Dihapus sesuai permintaan sebelumnya
     // {
     //   icon: Clock,
     //   label: "Jam Membaca",
     //   value: "47",
     //   color: "text-green-600",
-    // },
+    // }, // Dihapus sesuai permintaan sebelumnya
     // {
     //   icon: Star,
     //   label: "Ulasan Ditulis",
     //   value: "12",
     //   color: "text-yellow-600",
-    // },
+    // }, // Dihapus sesuai permintaan sebelumnya
   ];
+
+  const userName = isLoadingUser
+    ? "Memuat..."
+    : currentUserData?.fullName || "Pengguna";
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Dasbor</h1>
-          <p className="text-gray-600">Selamat datang kembali, John Doe!</p>
+          <p className="text-gray-600">Selamat datang kembali, {userName}!</p>
         </div>
+        {/* Tombol Edit Profil di-comment out sesuai permintaan sebelumnya */}
         {/* <Button asChild>
           <Link to="/profile">
             <User className="h-4 w-4 mr-2" />

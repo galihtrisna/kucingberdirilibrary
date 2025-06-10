@@ -48,13 +48,14 @@ const App = () => (
             >
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/upload" element={<UploadBook />} />
+              
             </Route>
             <Route element={<ProtectedRoute allowedRoles={["LIBRARIAN"]} />}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/books" element={<AdminBooks />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/borrowing" element={<AdminBorrowing />} />
+              <Route path="/upload" element={<UploadBook />} />
             </Route>
           </Routes>
         </Layout>

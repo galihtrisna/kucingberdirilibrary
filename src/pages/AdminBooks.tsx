@@ -225,14 +225,14 @@ const AdminBooks = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">Kelola Buku</h1>
-        <p className="text-xl text-gray-600">
+        {/* <p className="text-xl text-gray-600">
           Tinjau, setujui, dan kelola semua buku di perpustakaan
-        </p>
+        </p> */}
       </div>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Saring Buku</CardTitle>
+          <CardTitle>Cari Data Buku</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -317,7 +317,7 @@ const AdminBooks = () => {
                         </Link>
                       </Button>
 
-                      {book.status === "pending" && (
+                      {/* {book.status === "pending" && (
                         <>
                           <Button
                             size="sm"
@@ -336,18 +336,16 @@ const AdminBooks = () => {
                             Tolak
                           </Button>
                         </>
-                      )}
+                      )} */}
 
-                      {book.status === "approved" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(book)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(book)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
 
                       <Button
                         size="sm"

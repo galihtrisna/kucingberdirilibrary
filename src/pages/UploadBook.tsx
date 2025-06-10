@@ -320,7 +320,6 @@ const UploadBook = () => {
                 </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• URL Gambar Sampul (JPG/PNG)</li>
-                  <li>• (Abaikan untuk unggah file PDF saat ini)</li>
                   <li>• Konten jelas dan mudah dibaca</li>
                 </ul>
               </div>
@@ -329,7 +328,6 @@ const UploadBook = () => {
                   Kebijakan Konten
                 </h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Tidak ada materi berhak cipta</li>
                   <li>• Konten pendidikan lebih disukai</li>
                   <li>• Karya asli dipersilakan</li>
                 </ul>
@@ -337,7 +335,7 @@ const UploadBook = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardContent className="p-6">
               <h3 className="font-semibold text-gray-800 mb-3">
                 Proses Peninjauan
@@ -369,7 +367,7 @@ const UploadBook = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

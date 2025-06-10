@@ -111,19 +111,19 @@ const UserDashboard = () => {
         : borrowedBooks.length.toLocaleString(),
       color: "text-blue-600",
     },
-    { icon: Heart, label: "Favorit", value: "8", color: "text-red-600" },
-    {
-      icon: Clock,
-      label: "Jam Membaca",
-      value: "47",
-      color: "text-green-600",
-    },
-    {
-      icon: Star,
-      label: "Ulasan Ditulis",
-      value: "12",
-      color: "text-yellow-600",
-    },
+    // { icon: Heart, label: "Favorit", value: "8", color: "text-red-600" },
+    // {
+    //   icon: Clock,
+    //   label: "Jam Membaca",
+    //   value: "47",
+    //   color: "text-green-600",
+    // },
+    // {
+    //   icon: Star,
+    //   label: "Ulasan Ditulis",
+    //   value: "12",
+    //   color: "text-yellow-600",
+    // },
   ];
 
   return (
@@ -133,12 +133,12 @@ const UserDashboard = () => {
           <h1 className="text-3xl font-bold text-gray-800">Dasbor</h1>
           <p className="text-gray-600">Selamat datang kembali, John Doe!</p>
         </div>
-        <Button asChild>
+        {/* <Button asChild>
           <Link to="/profile">
             <User className="h-4 w-4 mr-2" />
             Edit Profil
           </Link>
-        </Button>
+        </Button> */}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,81 +7,117 @@ const Legal = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Legal Information</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          Informasi Legal
+        </h1>
         <p className="text-xl text-gray-600">
-          Terms of service, privacy policy, and copyright information for KBOeL
+          Ketentuan layanan, kebijakan privasi, dan informasi hak cipta untuk
+          KBOeL
         </p>
       </div>
 
       <div className="space-y-8">
-        {/* Terms of Service */}
+        {/* Ketentuan Layanan */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Terms of Service
+              Ketentuan Layanan
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-96">
               <div className="space-y-4 text-gray-700 leading-relaxed">
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">1. Acceptance of Terms</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    1. Persetujuan Ketentuan
+                  </h3>
                   <p>
-                    By accessing and using KucingBerdiri OpenLibrary (KBOeL), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                    Dengan mengakses dan menggunakan KucingBerdiri OpenLibrary
+                    (KBOeL), Anda menyetujui ketentuan yang berlaku. Jika Anda
+                    tidak setuju, harap tidak menggunakan layanan ini.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">2. Use License</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    2. Lisensi Penggunaan
+                  </h3>
                   <p>
-                    Permission is granted to temporarily download one copy of the materials on KBOeL for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+                    Anda diizinkan mengunduh satu salinan materi dari KBOeL
+                    untuk penggunaan pribadi dan sementara. Ini adalah lisensi,
+                    bukan pemindahan hak. Anda tidak boleh:
                   </p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>modify or copy the materials</li>
-                    <li>use the materials for any commercial purpose or for any public display</li>
-                    <li>attempt to reverse engineer any software contained on the website</li>
-                    <li>remove any copyright or other proprietary notations from the materials</li>
+                    <li>mengubah atau menyalin materi</li>
+                    <li>menggunakannya untuk tujuan komersial atau publik</li>
+                    <li>
+                      membongkar atau membalikkan rekayasa perangkat lunak
+                    </li>
+                    <li>
+                      menghapus hak cipta atau catatan kepemilikan lainnya
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">3. User Accounts</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    3. Akun Pengguna
+                  </h3>
                   <p>
-                    When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for safeguarding the password and for any activities that occur under your account.
+                    Saat membuat akun, Anda wajib memberikan data yang akurat
+                    dan terkini. Anda bertanggung jawab menjaga keamanan sandi
+                    dan seluruh aktivitas di akun Anda.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">4. Content Guidelines</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    4. Pedoman Konten
+                  </h3>
                   <p>
-                    Users may upload educational content, research papers, and books that are:
+                    Pengguna dapat mengunggah konten edukatif, jurnal, dan buku
+                    yang:
                   </p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Free from copyright restrictions or properly licensed</li>
-                    <li>Educational or informational in nature</li>
-                    <li>Not containing malicious software or harmful content</li>
-                    <li>Appropriate for all ages and cultures</li>
+                    <li>Bebas hak cipta atau sudah memiliki izin lisensi</li>
+                    <li>Bersifat edukatif atau informatif</li>
+                    <li>Tidak mengandung malware atau konten berbahaya</li>
+                    <li>Sesuai untuk semua usia dan budaya</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">5. Prohibited Uses</h3>
-                  <p>
-                    You may not use our service:
-                  </p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    5. Penggunaan yang Dilarang
+                  </h3>
+                  <p>Anda tidak boleh menggunakan layanan kami untuk:</p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>For any unlawful purpose or to solicit others to perform unlawful acts</li>
-                    <li>To violate any international, federal, provincial, or state regulations, rules, laws, or local ordinances</li>
-                    <li>To infringe upon or violate our intellectual property rights or the intellectual property rights of others</li>
-                    <li>To harass, abuse, insult, harm, defame, slander, disparage, intimidate, or discriminate</li>
+                    <li>
+                      tujuan ilegal atau mengajak orang lain melakukan hal
+                      tersebut
+                    </li>
+                    <li>
+                      melanggar hukum lokal, nasional, maupun internasional
+                    </li>
+                    <li>
+                      melanggar hak kekayaan intelektual kami atau pihak lain
+                    </li>
+                    <li>
+                      melecehkan, mencemarkan nama baik, atau mendiskriminasi
+                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">6. Disclaimer</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    6. Penyangkalan
+                  </h3>
                   <p>
-                    The materials on KBOeL are provided on an 'as is' basis. KBOeL makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+                    Materi di KBOeL disediakan "sebagaimana adanya". Kami tidak
+                    memberikan jaminan apa pun, baik tersurat maupun tersirat,
+                    termasuk kelayakan untuk tujuan tertentu atau tidak
+                    melanggar hak pihak lain.
                   </p>
                 </div>
               </div>
@@ -90,69 +125,84 @@ const Legal = () => {
           </CardContent>
         </Card>
 
-        {/* Privacy Policy */}
+        {/* Kebijakan Privasi */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Privacy Policy
+              Kebijakan Privasi
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-96">
               <div className="space-y-4 text-gray-700 leading-relaxed">
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">1. Information We Collect</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    1. Informasi yang Kami Kumpulkan
+                  </h3>
                   <p>
-                    We collect information you provide directly to us, such as when you create an account, upload content, or contact us. This may include:
+                    Kami mengumpulkan informasi yang Anda berikan, seperti saat
+                    membuat akun, mengunggah konten, atau menghubungi kami. Ini
+                    dapat mencakup:
                   </p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Name and contact information</li>
-                    <li>Account credentials</li>
-                    <li>Content you upload or share</li>
-                    <li>Communications with us</li>
+                    <li>Nama dan informasi kontak</li>
+                    <li>Kredensial akun</li>
+                    <li>Konten yang Anda unggah</li>
+                    <li>Komunikasi dengan kami</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">2. How We Use Your Information</h3>
-                  <p>We use the information we collect to:</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    2. Penggunaan Informasi
+                  </h3>
+                  <p>Kami menggunakan informasi Anda untuk:</p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Provide, maintain, and improve our services</li>
-                    <li>Process transactions and send related information</li>
-                    <li>Send technical notices and support messages</li>
-                    <li>Communicate with you about products, services, and events</li>
+                    <li>Menyediakan dan meningkatkan layanan</li>
+                    <li>Memproses transaksi dan mengirimkan notifikasi</li>
+                    <li>Mengirim pemberitahuan teknis dan bantuan</li>
+                    <li>Berkomunikasi tentang produk, layanan, dan acara</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">3. Information Sharing</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    3. Berbagi Informasi
+                  </h3>
                   <p>
-                    We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy. We may share information in the following situations:
+                    Kami tidak menjual atau membagikan informasi pribadi Anda ke
+                    pihak ketiga tanpa persetujuan, kecuali dalam kasus:
                   </p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>With your consent</li>
-                    <li>For legal reasons</li>
-                    <li>To protect rights and safety</li>
-                    <li>With service providers</li>
+                    <li>Dengan persetujuan Anda</li>
+                    <li>Untuk alasan hukum</li>
+                    <li>Untuk melindungi hak dan keamanan</li>
+                    <li>Dengan penyedia layanan kami</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">4. Data Security</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    4. Keamanan Data
+                  </h3>
                   <p>
-                    We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
+                    Kami menggunakan langkah keamanan yang sesuai untuk
+                    melindungi informasi pribadi Anda, meskipun tidak ada metode
+                    online yang 100% aman.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-800 mb-2">5. Your Rights</h3>
-                  <p>You have the right to:</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    5. Hak Anda
+                  </h3>
+                  <p>Anda berhak untuk:</p>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Access your personal information</li>
-                    <li>Correct inaccurate information</li>
-                    <li>Request deletion of your information</li>
-                    <li>Object to processing of your information</li>
+                    <li>Mengakses informasi pribadi Anda</li>
+                    <li>Memperbaiki informasi yang salah</li>
+                    <li>Meminta penghapusan informasi</li>
+                    <li>Menolak pemrosesan informasi</li>
                   </ul>
                 </div>
               </div>
@@ -160,80 +210,79 @@ const Legal = () => {
           </CardContent>
         </Card>
 
-        {/* Copyright Policy */}
+        {/* Kebijakan Hak Cipta */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
-              Copyright Policy
+              Kebijakan Hak Cipta
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 text-gray-700 leading-relaxed">
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Copyright Compliance</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Kepatuhan Hak Cipta
+                </h3>
                 <p>
-                  KBOeL respects the intellectual property rights of others and expects users to do the same. We have a policy of removing content that infringes copyright and terminating repeat infringers.
+                  KBOeL menghormati hak kekayaan intelektual dan mengharapkan
+                  pengguna melakukan hal yang sama. Kami akan menghapus konten
+                  pelanggar hak cipta dan memblokir pelanggar berulang.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">DMCA Notice</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Pemberitahuan DMCA
+                </h3>
                 <p>
-                  If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement, please provide our copyright agent with the following information:
+                  Jika Anda merasa karya Anda dilanggar, mohon kirim informasi
+                  berikut ke agen hak cipta kami:
                 </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>A physical or electronic signature of the copyright owner</li>
-                  <li>Identification of the copyrighted work claimed to have been infringed</li>
-                  <li>Identification of the material that is claimed to be infringing</li>
-                  <li>Your contact information</li>
-                  <li>A statement of good faith belief that the use is not authorized</li>
-                  <li>A statement that the information is accurate</li>
+                  <li>Tanda tangan fisik atau elektronik pemilik hak cipta</li>
+                  <li>Identifikasi karya yang dilanggar</li>
+                  <li>Lokasi materi pelanggar</li>
+                  <li>Informasi kontak Anda</li>
+                  <li>Pernyataan keyakinan pelanggaran</li>
+                  <li>Pernyataan keakuratan informasi</li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Acceptable Content</h3>
-                <p>
-                  We encourage the sharing of:
-                </p>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Konten yang Diterima
+                </h3>
+                <p>Kami mendorong berbagi konten seperti:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Public domain works</li>
-                  <li>Creative Commons licensed content</li>
-                  <li>Original works by the uploader</li>
-                  <li>Content with proper licensing permissions</li>
+                  <li>Karya domain publik</li>
+                  <li>Konten berlisensi Creative Commons</li>
+                  <li>Karya orisinal milik pengunggah</li>
+                  <li>Konten dengan izin lisensi yang sah</li>
                 </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Contact Information */}
+        {/* Kontak Kami */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Contact Us
+              Hubungi Kami
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <p className="text-gray-700 leading-relaxed">
-                If you have any questions about these Terms of Service, Privacy Policy, or Copyright Policy, 
-                please contact us:
+                Jika Anda memiliki pertanyaan tentang Ketentuan Layanan,
+                Kebijakan Privasi, atau Kebijakan Hak Cipta, silakan hubungi
+                kami:
               </p>
-              
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="space-y-2">
-                  <p><strong>Email:</strong> legal@kboel.com</p>
-                  <p><strong>Address:</strong> Jakarta, Indonesia</p>
-                  <p><strong>Phone:</strong> +62 123 456 7890</p>
-                </div>
-              </div>
 
-              <p className="text-sm text-gray-600">
-                Last updated: January 2024
-              </p>
+              <div className="bg-gray-50 p-4 rounded">
+              </div>
             </div>
           </CardContent>
         </Card>

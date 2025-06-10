@@ -193,7 +193,7 @@ const AdminBorrowing = () => {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Saring Catatan</CardTitle>
+          <CardTitle>Cari data peminjaman</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -296,7 +296,7 @@ const AdminBorrowing = () => {
         </div>
       )}
 
-      <Card className="mt-8">
+      {/* <Card className="mt-8">
         <CardHeader>
           <CardTitle>Ekspor Laporan</CardTitle>
         </CardHeader>
@@ -307,7 +307,7 @@ const AdminBorrowing = () => {
             <Button variant="outline">Buat Laporan Bulanan</Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };

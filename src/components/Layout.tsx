@@ -15,12 +15,14 @@ const Layout = ({ children }: LayoutProps) => {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-
     const checkUserRole = () => {
       const role = getRoleFromToken();
       setUserRole(role);
       console.log("LAYOUT: User Role setelah checkUserRole:", role);
-      console.log("LAYOUT: Token di localStorage saat checkUserRole:", localStorage.getItem("jwtToken"));
+      console.log(
+        "LAYOUT: Token di localStorage saat checkUserRole:",
+        localStorage.getItem("jwtToken")
+      );
     };
 
     // Panggil sekali saat komponen dimuat
@@ -56,7 +58,7 @@ const Layout = ({ children }: LayoutProps) => {
     setUserRole(null);
     console.log("LAYOUT: Token dihapus dari localStorage.");
     // Memicu event storage secara manual untuk memberitahu komponen lain (meskipun tidak selalu diperlukan jika hanya satu tab)
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
     window.location.href = "/auth";
   };
 
@@ -176,7 +178,7 @@ const Layout = ({ children }: LayoutProps) => {
                   </Link>
                 )}
                 <div className="flex space-x-2 pt-2">
-                  {userRole ? (
+                  {userRole === "MEMBER" ? (
                     <>
                       <Button
                         variant="ghost"
@@ -199,7 +201,7 @@ const Layout = ({ children }: LayoutProps) => {
                         Keluar
                       </Button>
                     </>
-                  ) : (
+                  ) : userRole === "LIBRARIAN" ? null : (
                     <Button size="sm" className="flex-1" asChild>
                       <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
                         Masuk
@@ -224,7 +226,8 @@ const Layout = ({ children }: LayoutProps) => {
                 <span>KBOeL</span>
               </div>
               <p className="text-gray-600 text-sm">
-                Platform perpustakaan terbuka digital untuk semua orang. Akses ribuan buku, makalah penelitian, dan materi pendidikan.
+                Platform perpustakaan terbuka digital untuk semua orang. Akses
+                ribuan buku, makalah penelitian, dan materi pendidikan.
               </p>
             </div>
 

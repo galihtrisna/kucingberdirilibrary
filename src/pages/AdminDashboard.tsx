@@ -52,7 +52,7 @@ const AdminDashboard = () => {
   } = useQuery<BorrowRec[]>({
     queryKey: ["allBorrowsForAdmin"],
     queryFn: async () => {
-      const response = await api.get("/borrow/history");
+      const response = await api.get("/borrow/history/all");
       return response.data;
     },
     refetchOnWindowFocus: false,

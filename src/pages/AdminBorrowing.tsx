@@ -29,6 +29,7 @@ interface BorrowRecFromAPI {
   startBorrow: string;
   endBorrow: string | null;
   status: string;
+  documentCode: string; // Pastikan ini ada di interface
 }
 
 const API_BASE_URL = process.env.VITE_API_BASE_URL;
@@ -38,7 +39,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("jwtToken");
+    const token = localStorage.getItem("jwtToken"); // Menggunakan "jwtToken"
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -62,16 +63,19 @@ const AdminBorrowing = () => {
   } = useQuery<BorrowRecFromAPI[]>({
     queryKey: ["adminBorrowingRecords"],
     queryFn: async () => {
-      const response = await api.get("/borrow/history");
+      // Pastikan endpoint ini benar untuk mendapatkan semua riwayat peminjaman
+      // Jika endpoint untuk admin berbeda dengan endpoint member, pastikan ini sesuai
+      const response = await api.get("/borrow/history/all");
       return response.data;
     },
     refetchOnWindowFocus: false,
   });
 
   const returnBookMutation = useMutation({
-    mutationFn: async (borrowId: number) => {
-      const token = localStorage.getItem("token");
-      const response = await api.post(`/borrow/return/${borrowId}`, null, {
+    mutationFn: async (documentCode: string) => {
+      // Mengubah tipe menjadi string
+      const token = localStorage.getItem("jwtToken"); // Menggunakan "jwtToken"
+      const response = await api.post(`/borrow/return/${documentCode}`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -79,12 +83,12 @@ const AdminBorrowing = () => {
       return response.data;
     },
 
-    onSuccess: (message, borrowId) => {
+    onSuccess: (message, documentCode) => {
       queryClient.invalidateQueries({ queryKey: ["adminBorrowingRecords"] });
       queryClient.invalidateQueries({ queryKey: ["adminBooks"] });
       toast({
         title: "Berhasil",
-        description: `Peminjaman ${borrowId} berhasil dikembalikan.`,
+        description: `Peminjaman dengan kode ${documentCode} berhasil dikembalikan.`,
       });
     },
     onError: (error: any) => {
@@ -106,8 +110,9 @@ const AdminBorrowing = () => {
     },
   });
 
-  const handleReturnBook = (borrowId: number) => {
-    returnBookMutation.mutate(borrowId);
+  const handleReturnBook = (documentCode: string) => {
+    // Mengubah tipe menjadi string
+    returnBookMutation.mutate(documentCode);
   };
 
   const stats = [
@@ -278,7 +283,7 @@ const AdminBorrowing = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleReturnBook(record.id)}
+                        onClick={() => handleReturnBook(record.documentCode)} // Menggunakan record.documentCode
                       >
                         Tandai Dikembalikan
                       </Button>

@@ -68,7 +68,7 @@ const AdminDashboard = () => {
         ? allBooks.length.toLocaleString()
         : "0",
     },
-    { icon: Users, label: "Pengguna Aktif", value: "8,921" },
+    // { icon: Users, label: "Pengguna Aktif", value: "8,921" },
     {
       icon: BookText,
       label: "Total Peminjaman",
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Status Sistem</CardTitle>
           </CardHeader>
@@ -166,7 +166,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

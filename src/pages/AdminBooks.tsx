@@ -10,14 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Search,
-  Eye,
-  Edit,
-  Trash2,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Search, Eye, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -204,18 +197,20 @@ const AdminBooks = () => {
     }
   };
 
-  const getStatusBadge = (status: string | undefined) => {
-    switch (status) {
-      case "approved":
-        return <Badge className="bg-green-100 text-green-800">Disetujui</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Menunggu</Badge>;
-      case "rejected":
-        return <Badge className="bg-red-100 text-red-800">Ditolak</Badge>;
-      default:
-        return <Badge variant="secondary">Tidak Diketahui</Badge>;
-    }
-  };
+  // const getStatusBadge = (status: string | undefined) => {
+  //   switch (status) {
+  //     case "approved":
+  //       return <Badge className="bg-green-100 text-green-800">Disetujui</Badge>;
+  //     case "pending":
+  //       return (
+  //         <Badge className="bg-yellow-100 text-yellow-800">Menunggu</Badge>
+  //       );
+  //     case "rejected":
+  //       return <Badge className="bg-red-100 text-red-800">Ditolak</Badge>;
+  //     default:
+  //       return <Badge variant="secondary">Tidak Diketahui</Badge>;
+  //   }
+  // };
 
   const filteredBooks = (books || []).filter((book) => {
     const matchesSearch =
@@ -250,7 +245,7 @@ const AdminBooks = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder="Saring berdasarkan status" />
               </SelectTrigger>
@@ -260,7 +255,7 @@ const AdminBooks = () => {
                 <SelectItem value="pending">Menunggu</SelectItem>
                 <SelectItem value="rejected">Ditolak</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </CardContent>
       </Card>
@@ -299,7 +294,7 @@ const AdminBooks = () => {
                   </div>
 
                   <div className="lg:col-span-2">
-                    {getStatusBadge(book.status)}
+                    {/* {getStatusBadge(book.status)} */}
                   </div>
 
                   <div className="lg:col-span-2">
@@ -310,9 +305,7 @@ const AdminBooks = () => {
                   </div>
 
                   <div className="lg:col-span-2">
-                    <p className="text-sm text-gray-600">
-                      Stok: {book.stocks}
-                    </p>
+                    <p className="text-sm text-gray-600">Stok: {book.stocks}</p>
                   </div>
 
                   <div className="lg:col-span-2">

@@ -40,7 +40,8 @@ const UploadBook = () => {
     isbn: "",
     year: "",
     publisher: "",
-    stocks: 1,
+    stocks: 0, // Mengubah nilai awal menjadi 0 atau sesuai kebutuhan
+    pages: "", // Menambahkan field pages
     thumbnail: "",
     digitalAvail: true,
   });
@@ -49,6 +50,7 @@ const UploadBook = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validasi input
     if (
       !formData.title ||
       !formData.author ||
@@ -56,12 +58,13 @@ const UploadBook = () => {
       !formData.isbn ||
       !formData.year ||
       !formData.publisher ||
-      !formData.thumbnail
+      !formData.thumbnail ||
+      formData.stocks < 0 // Tambahkan validasi untuk stocks
     ) {
       toast({
         title: "Kesalahan Validasi",
         description:
-          "Mohon isi semua informasi buku yang diperlukan (Judul, Penulis, Kategori, ISBN, Tahun, Penerbit, Gambar Sampul).",
+          "Mohon isi semua informasi buku yang diperlukan dengan benar (Judul, Penulis, Kategori, ISBN, Tahun, Penerbit, Jumlah Stok, Gambar Sampul).",
         variant: "destructive",
       });
       return;
@@ -75,19 +78,20 @@ const UploadBook = () => {
         year: parseInt(formData.year),
         isbn: formData.isbn,
         thumbnail: formData.thumbnail,
-        stocks: formData.stocks,
+        stocks: formData.stocks, // Pastikan stocks dikirim
         digitalAvail: formData.digitalAvail,
         jenisBuku: formData.jenisBuku,
+        // pages TIDAK disertakan di sini karena tidak ada di model Book backend
       };
 
       await api.post("/book/add", payload);
 
       toast({
         title: "Buku Berhasil Diunggah!",
-        description:
-          "Buku Anda telah diajukan untuk ditinjau dan akan tersedia setelah disetujui.",
+        description: "Buku sudah dapat dipinjam",
       });
 
+      // Reset form
       setFormData({
         title: "",
         author: "",
@@ -95,7 +99,8 @@ const UploadBook = () => {
         isbn: "",
         year: "",
         publisher: "",
-        stocks: 1,
+        stocks: 0,
+        pages: "",
         thumbnail: "",
         digitalAvail: true,
       });
@@ -119,7 +124,7 @@ const UploadBook = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -224,14 +229,49 @@ const UploadBook = () => {
                   </div>
                 </div>
 
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="isbn">ISBN *</Label>
+                    <Input
+                      id="isbn"
+                      value={formData.isbn}
+                      onChange={(e) =>
+                        handleInputChange("isbn", e.target.value)
+                      }
+                      placeholder="978-0-123456-78-9"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="stocks">Jumlah Stok *</Label>{" "}
+                    {/* Menambahkan input untuk stocks */}
+                    <Input
+                      id="stocks"
+                      type="number"
+                      value={formData.stocks}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "stocks",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      placeholder="Jumlah stok buku"
+                      required
+                      min="0"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="isbn">ISBN *</Label>
+                  <Label htmlFor="pages">Jumlah Halaman</Label>{" "}
+                  {/* Menambahkan input untuk pages */}
                   <Input
-                    id="isbn"
-                    value={formData.isbn}
-                    onChange={(e) => handleInputChange("isbn", e.target.value)}
-                    placeholder="978-0-123456-78-9"
-                    required
+                    id="pages"
+                    type="number"
+                    value={formData.pages}
+                    onChange={(e) => handleInputChange("pages", e.target.value)}
+                    placeholder="Jumlah halaman buku"
+                    min="1"
                   />
                 </div>
 

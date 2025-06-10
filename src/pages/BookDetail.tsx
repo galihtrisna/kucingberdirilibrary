@@ -114,15 +114,27 @@ const BookDetail = () => {
     },
     onError: (error: any) => {
       let errorMessage = "Gagal meminjam buku. Silakan coba lagi.";
+
       if (axios.isAxiosError(error) && error.response) {
-        errorMessage =
+        const serverMessage =
           error.response.data.data ||
           error.response.data.message ||
           error.message;
-        if (typeof errorMessage === "object" && errorMessage !== null) {
-          errorMessage = JSON.stringify(errorMessage);
+
+        if (typeof serverMessage === "string") {
+          if (serverMessage.toLowerCase().includes("stok")) {
+            errorMessage = "Stok buku habis. Tidak bisa dipinjam saat ini.";
+          } else {
+            errorMessage = serverMessage;
+          }
+        } else if (
+          typeof serverMessage === "object" &&
+          serverMessage !== null
+        ) {
+          errorMessage = JSON.stringify(serverMessage);
         }
       }
+
       toast({
         title: "Peminjaman Gagal",
         description: errorMessage,
@@ -166,7 +178,8 @@ const BookDetail = () => {
       }
       toast({
         title: "Penambahan Ulasan Gagal",
-        description: errorMessage,
+        // description: errorMessage,
+        description: "Kamu sudah pernah komentar",
         variant: "destructive",
       });
     },
